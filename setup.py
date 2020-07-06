@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import os
+import re
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+
+def read_file(path):
+    with open(os.path.join(here, path), "r") as fp:
+        return fp.read()
+
+def get_version():
+    content = read_file(module_name)
+    version_match = re.search("^__version__ = ['\"]([^'\"]+)", content, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+here = os.path.abspath(os.path.dirname(__file__))
+module_name = "ban_peers"
+
+setup(
+    name="Ban-Peers",
+    version=get_version(),
+    author="SeaHOH",
+    author_email="seahoh@gmail.com",
+    url="https://github.com/SeaHOH/ban-peers",
+    license="MIT",
+    description=("Checking & banning BitTorrent leecher peers via Web API, "
+                 "working for uTorrent 3."),
+    long_description=read_file("README.md"),
+    long_description_content_type="text/markdown",
+    keywords="BitTorrent ban leecher uTorrent",
+    py_modules=[module_name],
+    zip_safe=True,
+    platforms="any",
+    classifiers=[
+        "Development Status :: 4 - Production/Beta",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Topic :: Utilities"
+    ],
+    python_requires=">=3.6",
+)
