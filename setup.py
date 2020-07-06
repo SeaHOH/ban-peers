@@ -10,11 +10,11 @@ except ImportError:
 
 
 def read_file(path):
-    with open(os.path.join(here, path), "r") as fp:
+    with open(os.path.join(here, path), "r", encoding="utf-8") as fp:
         return fp.read()
 
 def get_version():
-    content = read_file(module_name)
+    content = read_file(module_name + ".py")
     version_match = re.search("^__version__ = ['\"]([^'\"]+)", content, re.M)
     if version_match:
         return version_match.group(1)
@@ -39,9 +39,10 @@ setup(
     zip_safe=True,
     platforms="any",
     classifiers=[
-        "Development Status :: 4 - Production/Beta",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Environment :: Console",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Topic :: Utilities"
