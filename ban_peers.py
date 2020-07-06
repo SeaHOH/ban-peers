@@ -1,7 +1,7 @@
 """
 Checking & banning BitTorrent leecher peers via Web API, working for uTorrent 3.
 """
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __py_min__ = '3.6.0'
@@ -516,7 +516,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_FACK_PROGRESS = '汇报虚假进度'
     LANG_XUNLEI = '迅雷'
     LANG_PLAYER = '播放器'
-    LANG_FACK_CLIENT = '虚假客户端'
+    LANG_FACK_CLIENT = '假冒客户端'
     LANG_OFFLINE_SERVER = '离线下载服务器'
     LANG_LEECHER_CLIENT = '吸血客户端'
     LANG_LEECHER_SUSPECTED = '高度疑似吸血'

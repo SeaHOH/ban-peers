@@ -2,9 +2,11 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers is checking & banning BitTorrent leecher peers via Web API, working for uTorrent 3.
+Ban-Peers is checking & banning BitTorrent leecher peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leecher clients, and BT players, fake clients, who reported fake progress, the fact in serious leecher.
 
-Please use this script in local network, uTorrent Web API does not support HTTPS connections.
+Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges in ipfilter, they will be stored as-is.
+
+**Please use this script in local network**, μTorrent Web API does not support HTTPS connections, it is not safe.
 
 # Installation
 Install from 
@@ -12,7 +14,7 @@ Install from
 [![package format](https://img.shields.io/pypi/format/ban-peers)](https://pypi.org/project/ban-peers/#files)
 [![monthly downloads](https://img.shields.io/pypi/dm/ban-peers)](https://pypi.org/project/ban-peers/#files)
 
-    pip install ban-peers
+    pip3 install ban-peers
 
 Or download and Install from source code
 
@@ -23,15 +25,13 @@ Or download and Install from source code
 
 # Usage
 ```
-X:\ban-peers>ban_peers.py -h
+$ ban_peers -h
 
 Usage:
-        ban_peers.py [-h] [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
-                    [-e HOURS] [-f FORMAT]
-                    [IPFILTER-PATH]
+        ban_peers       [-h] [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
+                        [-e HOURS] [-f FORMAT] [IPFILTER-PATH]
 
-Checking & banning BitTorrent leecher peers via Web API, working for uTorrent
-3.
+Checking & banning BitTorrent leecher peers via Web API, working for uTorrent 3.
 
 Positional Arguments:
         IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty.
@@ -52,7 +52,7 @@ Optional Arguments:
 ```
 
 ```
-X:\ban-peers>ban_peers.py X:\utorrent -p 12345 -a username:password
+$ ban_peers ~/utorrent -p 12345 -a username:password
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -60,14 +60,25 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 or
 
 ```
-X:\ban-peers>ban_peers.py
+$ ban-peers
 Please input uTorrent setting folder path or ipfilter file path:
-X:\utorrent
+~/utorrent
 Please input WebUI username: username
 Please input WebUI password: password  # No cover
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
+
+- Quit: exit the script.
+- Stop: same as Quit if run script direct, or stop checking.
+- Restart: reload ipfilter, it is useful when manually modify ipfilter.
+- Pause: pause checking, it is useful when manually modify ipfilter.
+- Proceed: just proceed checking.
+
+
+# Thanks
+https://github.com/c0re100/qBittorrent-Enhanced-Edition
+https://github.com/ShenHongFei/utorrent-block-xunlei
 
 # License
 Ban-Peers is released under the [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).

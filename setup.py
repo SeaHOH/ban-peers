@@ -48,4 +48,5 @@ setup(
         "Topic :: Utilities"
     ],
     python_requires=">=3.6",
+    entry_points={'console_scripts': ['ban_peers=ban_peers:main']},
 )
