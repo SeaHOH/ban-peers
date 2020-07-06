@@ -77,7 +77,7 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 
 # Thanks
-https://github.com/c0re100/qBittorrent-Enhanced-Edition
+https://github.com/c0re100/qBittorrent-Enhanced-Edition  
 https://github.com/ShenHongFei/utorrent-block-xunlei
 
 # License

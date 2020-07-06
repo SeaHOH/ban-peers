@@ -76,7 +76,7 @@ X:\utorrent
 - 恢复：只是恢复检查。
 
 # 感谢
-https://github.com/c0re100/qBittorrent-Enhanced-Edition
+https://github.com/c0re100/qBittorrent-Enhanced-Edition  
 https://github.com/ShenHongFei/utorrent-block-xunlei
 
 # License
