@@ -2,7 +2,7 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers is checking & banning BitTorrent leecher peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leecher clients, and BT players, fake clients, who reported fake progress, the fact in serious leecher.
+Ban-Peers is checking & banning BitTorrent leecher peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
 Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges in ipfilter, they will be stored as-is.
 
@@ -75,10 +75,23 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 - Pause: pause checking, it is useful when manually modify ipfilter.
 - Proceed: just proceed checking.
 
+# Related projects
+- μTorrent
+
+    https://github.com/ShenHongFei/utorrent-block-xunlei  
+    https://github.com/iHamsterball/utorrent_block_thunder  
+
+- qBittorrent
+
+    https://github.com/c0re100/qBittorrent-Enhanced-Edition  
+    https://github.com/originqtum/banned-xunlei-for-qbittorrent  
+    https://github.com/jinliming2/qbittorrent-ban-xunlei  
+    https://github.com/Od1gree/btDownloadManager  
+    https://github.com/outline941/qb-ban-xunlei  
 
 # Thanks
-https://github.com/c0re100/qBittorrent-Enhanced-Edition  
-https://github.com/ShenHongFei/utorrent-block-xunlei
+[c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
+[ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
 
 # License
 Ban-Peers is released under the [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).

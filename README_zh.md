@@ -75,9 +75,23 @@ X:\utorrent
 - 暂停：暂停检查，对于手动修改 ipfilter 非常有用。
 - 恢复：只是恢复检查。
 
+# 相关项目
+- μTorrent
+
+    https://github.com/ShenHongFei/utorrent-block-xunlei  
+    https://github.com/iHamsterball/utorrent_block_thunder  
+
+- qBittorrent
+
+    https://github.com/c0re100/qBittorrent-Enhanced-Edition  
+    https://github.com/originqtum/banned-xunlei-for-qbittorrent  
+    https://github.com/jinliming2/qbittorrent-ban-xunlei  
+    https://github.com/Od1gree/btDownloadManager  
+    https://github.com/outline941/qb-ban-xunlei  
+
 # 感谢
-https://github.com/c0re100/qBittorrent-Enhanced-Edition  
-https://github.com/ShenHongFei/utorrent-block-xunlei
+[c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
+[ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
 
 # License
 Ban-Peers 以 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE) 许可发布。

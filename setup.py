@@ -34,7 +34,7 @@ setup(
                  "working for uTorrent 3."),
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
-    keywords="BitTorrent ban leecher uTorrent",
+    keywords="BitTorrent uTorrent anti-leech ban block XunLei",
     py_modules=[module_name],
     zip_safe=True,
     platforms="any",
