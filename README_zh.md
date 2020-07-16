@@ -26,33 +26,40 @@
 # 使用
 ```
 ban_peers -h
+欢迎使用 ban_peers 0.1.4
 
 用法:
-       ban_peers       [-h] [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
-                       [-f 格式] [IP屏蔽配置路径]
+        ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
+                        [-f 格式] [-P] [-L] [-h] [-v] [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端, 工作于 uTorrent 3。
 
 位置参数:
-       IP屏蔽配置路径  ipfilter 目录或文件路径, 留空将等待输入。重要提示:
-                       必须是 uTorrent 配置使用的路径!
+        IP屏蔽配置路径  ipfilter 目录或文件路径, 留空将等待输入。重要提示:
+                        必须是 uTorrent 配置使用的路径!
 
 可选参数:
-       -h, --help      显示此帮助信息并退出
-       -H IP|域名, --host IP|域名
-                       网页界面的主机, 默认 127.0.0.1
-       -p 端口, --port 端口
-                       网页界面的端口, 默认 8080
-       -a 用户名:密码, --authorization 用户名:密码
-                       网页界面的授权, 如果需要将等待输入
-       -e 小时, --expire 小时
-                       屏蔽对端的过期时间, 默认 12 小时
-       -f 格式, --log-header 格式
-                       日志头格式, 默认 %H:%M:%S
+        -H IP|域名, --host IP|域名
+                        网页界面的主机, 默认 127.0.0.1
+        -p 端口, --port 端口
+                        网页界面的端口, 默认 8080
+        -a 用户名:密码, --authorization 用户名:密码
+                        网页界面的授权, 如果需要将等待输入
+        -e 小时, --expire 小时
+                        屏蔽对端的过期时间, 默认 12 小时
+        -f 格式, --log-header 格式
+                        日志头格式, 默认 %H:%M:%S
+        -P, --no-fake-progress-check
+                        不进行虚假进度检查
+        -L, --no-serious-leech-check
+                        不进行严重吸血检查
+        -h, --help      显示此帮助信息并退出
+        -v, --version   显示版本信息并退出
 ```
 
 ```
 ban_peers X:\utorrent -p 12345 -a username:password
+欢迎使用 ban_peers 0.1.4
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出, (S)停止, (R)重新开始, (P)暂停/恢复
 ```
@@ -61,6 +68,7 @@ ban_peers X:\utorrent -p 12345 -a username:password
 
 ```
 ban_peers
+欢迎使用 ban_peers 0.1.4
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\utorrent
 请输入 WebUI 用户名: username

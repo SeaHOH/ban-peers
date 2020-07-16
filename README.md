@@ -2,7 +2,7 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers is checking & banning BitTorrent leecher peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
+Ban-Peers is checking & banning BitTorrent leech peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
 Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges in ipfilter, they will be stored as-is.
 
@@ -26,19 +26,20 @@ Or download and Install from source code
 # Usage
 ```
 $ ban_peers -h
+Welcome using ban_peers 0.1.4
 
 Usage:
-        ban_peers       [-h] [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
-                        [-e HOURS] [-f FORMAT] [IPFILTER-PATH]
+        ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
+                        [-e HOURS] [-f FORMAT] [-P] [-L] [-h] [-v]
+                        [IPFILTER-PATH]
 
-Checking & banning BitTorrent leecher peers via Web API, working for uTorrent 3.
+Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
 
 Positional Arguments:
         IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty.
                         IMPORTANT NOTICE: must be the uTorrent setting path!
 
 Optional Arguments:
-        -h, --help      Show this help message and exit
         -H IP|DOMAIN, --host IP|DOMAIN
                         WebUI host, default 127.0.0.1
         -p PORT, --port PORT
@@ -49,10 +50,17 @@ Optional Arguments:
                         Ban expire time for peers, default 12 HOURS
         -f FORMAT, --log-header FORMAT
                         Format of log header, default %H:%M:%S
+        -P, --no-fake-progress-check
+                        Don't checking fake progress
+        -L, --no-serious-leech-check
+                        Don't checking serious leech
+        -h, --help      Show this help message and exit
+        -v, --version   Show version and exit
 ```
 
 ```
 $ ban_peers ~/utorrent -p 12345 -a username:password
+Welcome using ban_peers 0.1.4
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -61,6 +69,7 @@ or
 
 ```
 $ ban-peers
+Welcome using ban_peers 0.1.4
 Please input uTorrent setting folder path or ipfilter file path:
 ~/utorrent
 Please input WebUI username: username

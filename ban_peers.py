@@ -1,7 +1,11 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+"""\
+Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
 """
-Checking & banning BitTorrent leecher peers via Web API, working for uTorrent 3.
-"""
-__version__ = '0.1.3'
+__app_name__ = 'ban_peers'
+__version__ = '0.1.4'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __py_min__ = '3.6.0'
@@ -41,6 +45,8 @@ if _max_columns < 79 and \
         os.name == 'nt' and os.system('mode con: cols=80') == 0 or \
         os.name != 'nt' and os.system('stty columns 80') == 0:
     _max_columns = 79
+_10m = 1024 * 1024 * 10
+_100m = _10m * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(unknown.+?/)?7\.)', re.I)
@@ -164,11 +170,11 @@ class List2Attr:
         RELEVANCE = 21
 
     def __init__(self, list:List[Union[int, str]], type:str) -> None:
-        self.list = list
-        self.type = self.__class__.__dict__[type.upper()]
+        object.__setattr__(self, '_list', list)
+        object.__setattr__(self, '_type', self.__class__.__dict__[type.upper()])
 
     def __getattr__(self, name:str) -> Union[int, float, str]:
-        value = self.list[self.type.__dict__[name.upper()]]
+        value = self._list[self._type.__dict__[name.upper()]]
         if name == 'ip' and ':' in value:
             return f'[{value}]'
         elif name == 'client' and value[:1] == '-':
@@ -177,6 +183,13 @@ class List2Attr:
             return value / 65536
         return value
 
+    def __setattr__(self, name:str, value:Union[int, str]) -> None:
+        if name == 'ip' and value[:1] == '[':
+            value = value[1:-1]
+        elif name == 'availability':
+            value = int(value * 65536)
+        self._list[self._type.__dict__[name.upper()]] = value
+
 
 class UTorrentWebAPI:
 
@@ -184,7 +197,8 @@ class UTorrentWebAPI:
 
     def __init__(self, ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
                        username:Optional[str]='', password:Optional[str]='',
-                       expire:int=3600*12, log_header_fmt:str='%H:%M:%S') -> None:
+                       expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
+                       check_fake_progress:bool=True, check_serious_leech:bool=True) -> None:
         while not ipfilter:
             ipfilter = input(LANG_INPUT_IPFILTER)
         if os.path.isdir(ipfilter):
@@ -198,10 +212,13 @@ class UTorrentWebAPI:
         self.req = Request(self.url_root)
         self.set_authorization(username, password)
         self.expire = expire
+        self.check_fake_progress = check_fake_progress
+        self.check_serious_leech = check_serious_leech
         self.log_header_fmt = log_header_fmt
         self.params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
         self._statistics = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
+        self._statistics_uploaded = collections.defaultdict(dict)
         self._statistics_str = ''
         self.need_save = False
         self.running = False
@@ -264,7 +281,7 @@ class UTorrentWebAPI:
                                 ).decode())
 
 
-    def request(self, path:str='', params:Params=None) -> HTTPResponse:
+    def request(self, path:str='', params:Params=None) -> Union[HTTPResponse, NoReturn]:
         if params:
             params_str = urlencode({
                 'token': self.token,
@@ -293,14 +310,18 @@ class UTorrentWebAPI:
         html = self.request(path='token.html').read().decode()
         self.token = TOKEN.search(html).group(1)
 
-    def get_torrents(self) -> Iterable[List2Attr]:
+    def get_torrents(self) -> Tuple[List[str], Iterable[List2Attr]]:
+        def gen(torrents):
+            for torrent in torrents:
+                torrent = List2Attr(torrent, 'torrent')
+                if torrent.peers_connected:
+                    yield torrent
+
         torrents = json.load(self.request(params=self.params_list))
         if 'torrentc' in torrents:
             self.params_list['cid'] = torrents['torrentc']
-        for torrent in torrents.get('torrents') or torrents.get('torrentp'):
-            torrent = List2Attr(torrent, 'torrent')
-            if torrent.peers_connected:
-                yield torrent
+        return (torrents.get('torrentm', []),
+                gen(torrents.get('torrents') or torrents.get('torrentp', [])))
 
     def get_files(self, hash:str) -> Iterable[List2Attr]:
         response = self.request(params={
@@ -365,35 +386,48 @@ class UTorrentWebAPI:
             limit_dict_lenght(self.log_ip, 32)
         
         reasons = []
-        for torrent in self.get_torrents():
-            hash = torrent.hash
-            size_tenth = int(torrent.size / 10)
+        torrents_removed, torrents = self.get_torrents()
+        for hash in torrents_removed:
+            self._statistics_uploaded.pop(hash, None)
+        for torrent in torrents:
             size_millesimal = int(torrent.size / 1000)
             seeding = torrent.progress >= 1000  # uTorrent bug?
-            size_last_downloaded = torrent.downloaded - sum(
-                                   file.downloaded
-                                   for file in self.get_files(hash)
-                                   if file.priority)  # not accurate
+            hash = torrent.hash
+            if self.check_serious_leech:
+                files = list(self.get_files(hash))
+                size_tenth = int(sum(file.size for file in files
+                                     if file.priority) / 10)
+                size_last_downloaded = torrent.downloaded - sum(
+                                       file.downloaded
+                                       for file in files)
             for peer in self.get_peers(hash):
                 ip_port = f'{peer.ip}:{peer.port}'
-                if peer.progress:
+                if not self.check_fake_progress:
+                    pass
+                elif peer.progress:
                     self._statistics_progress.pop(ip_port, None)
                 elif (seeding or peer.downloaded == 0):
-                    last_uploaded = self._statistics_progress[ip_port].get(hash)
-                    if last_uploaded is None:
-                        self._statistics_progress[ip_port][hash] = peer.uploaded
-                    elif peer.uploaded - last_uploaded > size_millesimal * 1.5:
-                        log(LANG_FACK_PROGRESS)
-                        if seeding:
-                            reasons.append('Seeding')
-                        reasons.append('Progress')
+                    ct = time.monotonic()
+                    try:
+                        last_uploaded, t = self._statistics_progress[ip_port][hash]
+                    except KeyError:
+                        self._statistics_progress[ip_port][hash] = \
+                                last_uploaded, t = peer.uploaded, None
+                    if peer.uploaded - last_uploaded > size_millesimal * 1.5:
+                        if t is None:
+                            self._statistics_progress[ip_port][hash] = last_uploaded, ct
+                        elif ct - t > 60:  # did not recovered within one minute
+                            log(LANG_FACK_PROGRESS)
+                            if seeding:
+                                reasons.append('Seeding')
+                            reasons.append('Progress')
                 limit_dict_lenght(self._statistics_progress, 1024)
                 if peer.port >= 65000 and \
                         peer.country == 'CN' and \
                         'Transmission' in peer.client and \
                         peer.downloaded == peer.relevance == 0:
                     log(LANG_OFFLINE_SERVER)
-                    if 'Seeding' in reasons:
+                    if reasons and reasons[0] == 'Seeding':
                         del reasons[0]
                     reasons.append('Offline')
                 elif LEECHER_XUNLEI.search(peer.client):
@@ -401,7 +435,7 @@ class UTorrentWebAPI:
                     if peer.port in [12345, 15000] or \
                             not seeding and \
                             peer.downloaded == peer.relevance == 0:
-                        if 'Seeding' in reasons:
+                        if reasons and reasons[0] == 'Seeding':
                             del reasons[0]
                         reasons.append('XunLei')
                     elif seeding:
@@ -420,26 +454,50 @@ class UTorrentWebAPI:
                         reasons.append('Seeding')
                         reasons.append('Fake')
                     elif peer.downloaded == 0 and \
-                            peer.uploaded > min(size_millesimal, 10485760):
+                            peer.uploaded > min(size_millesimal, _10m):
                         reasons.append('Fake')
                 elif LEECHER_OTHER.search(peer.client):
                     log(LANG_LEECHER_CLIENT)
                     if seeding:
                         reasons.append('Seeding')
                         reasons.append('Leecher')
-                    elif peer.uploaded > min(size_millesimal, 10485760) and \
+                    elif peer.uploaded > min(size_millesimal, _10m) and \
                             peer.downloaded * 5 < peer.uploaded or \
                             peer.downloaded * 2 / size_millesimal < peer.relevance:
                         reasons.append('Leecher')
-                if not seeding and not reasons and peer.progress < 1000 and \
-                        ('U' in peer.flags and 'd' in peer.flags or
-                        peer.downspeed < 1024 and peer.waited > 60) and \
-                        peer.uploaded - size_last_downloaded > min(size_tenth, 104857600) and \
-                        peer.downloaded * 10 < peer.uploaded - size_last_downloaded and \
-                        peer.downloaded * 10 / size_millesimal < peer.relevance:
-                    log(LANG_LEECHER_SUSPECTED)
-                    reasons.append('Suspected')
-                    reasons.append('Leecher')
+                if not self.check_serious_leech:
+                    pass
+                elif seeding:
+                    self._statistics_uploaded.pop(hash, None)
+                elif reasons or peer.progress >= 1000:
+                    if size_last_downloaded > _10m:
+                        self._statistics_uploaded[hash].pop(ip_port, None)
+                else:
+                    if size_last_downloaded > _10m:
+                        try:
+                            _last_downloaded, _downloaded, _uploaded = \
+                                    self._statistics_uploaded[hash][ip_port]
+                        except KeyError:
+                            _last_downloaded = size_last_downloaded
+                            _downloaded = peer.downloaded
+                            _uploaded = peer.uploaded
+                        if size_last_downloaded - _last_downloaded > _10m:
+                            _downloaded = peer.downloaded
+                            _uploaded = peer.uploaded
+                        self._statistics_uploaded[hash][ip_port] = \
+                                _last_downloaded, _downloaded, _uploaded
+                        peer.downloaded -= _downloaded
+                        peer.uploaded -= _uploaded
+                    if ('U' in peer.flags and 'd' in peer.flags or
+                            peer.downspeed < 1024 and peer.waited > 60) and \
+                            peer.uploaded > min(size_tenth, _100m) and \
+                            peer.downloaded * 10 < peer.uploaded and \
+                            peer.downloaded * 10 / size_millesimal < peer.relevance:
+                        log(LANG_LEECHER_SUSPECTED)
+                        reasons.append('Suspected')
+                        reasons.append('Leecher')
+                        if size_last_downloaded > _10m:
+                            self._statistics_uploaded[hash].pop(ip_port, None)
                 if reasons:
                     if not seeding:
                         self._statistics_progress.pop(ip_port, None)
@@ -540,6 +598,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_INPUT_IPFILTER = '请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:\n'
     LANG_INPUT_USERNAME = '请输入 WebUI 用户名: '
     LANG_INPUT_PASSWORD = '请输入 WebUI 密码: '
+    LANG_WELCOME = '欢迎使用'
     LANG_START = '开始'
     LANG_STOP = '停止'
     LANG_QUIT = '退出'
@@ -569,24 +628,28 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_POSITIONAL = '位置参数'
     LANG_HELP_OPTIONAL = '可选参数'
     LANG_HELP_HELP = '显示此帮助信息并退出'
-    LANG_IPFILTER_META = 'IP屏蔽配置路径'
-    LANG_IPFILTER_HELP = ('ipfilter 目录或文件路径, 留空将等待输入。'
+    LANG_HELP_VERSION = '显示版本信息并退出'
+    LANG_HELP_IPFILTER_META = 'IP屏蔽配置路径'
+    LANG_HELP_IPFILTER = ('ipfilter 目录或文件路径, 留空将等待输入。'
                           '重要提示: 必须是 uTorrent 配置使用的路径!')
-    LANG_HOST_META = 'IP|域名'
-    LANG_HOST_HELP = '网页界面的主机, 默认 '
-    LANG_PORT_META = '端口'
-    LANG_PORT_HELP = '网页界面的端口, 默认 '
-    LANG_AUTHORIZATION_META = '用户名:密码'
-    LANG_AUTHORIZATION_HELP = '网页界面的授权, 如果需要将等待输入'
-    LANG_EXPIRE_META = '小时'
-    LANG_EXPIRE_HELP = '屏蔽对端的过期时间, 默认 '
-    LANG_HEADER_META = '格式'
-    LANG_HEADER_HELP = '日志头格式, 默认 '
+    LANG_HELP_HOST_META = 'IP|域名'
+    LANG_HELP_HOST = '网页界面的主机, 默认'
+    LANG_HELP_PORT_META = '端口'
+    LANG_HELP_PORT = '网页界面的端口, 默认'
+    LANG_HELP_AUTHORIZATION_META = '用户名:密码'
+    LANG_HELP_AUTHORIZATION = '网页界面的授权, 如果需要将等待输入'
+    LANG_HELP_EXPIRE_META = '小时'
+    LANG_HELP_EXPIRE = '屏蔽对端的过期时间, 默认'
+    LANG_HELP_HEADER_META = '格式'
+    LANG_HELP_HEADER = '日志头格式, 默认'
+    LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
+    LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
     __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端, 工作于 uTorrent 3。'
 else:
     LANG_INPUT_IPFILTER = 'Please input uTorrent setting folder path or ipfilter file path:\n'
     LANG_INPUT_USERNAME = 'Please input WebUI username: '
     LANG_INPUT_PASSWORD = 'Please input WebUI password: '
+    LANG_WELCOME = 'Welcome using'
     LANG_START = 'start'
     LANG_STOP = 'stop'
     LANG_QUIT = 'quit'
@@ -616,19 +679,22 @@ else:
     LANG_HELP_POSITIONAL = 'Positional Arguments'
     LANG_HELP_OPTIONAL = 'Optional Arguments'
     LANG_HELP_HELP = 'Show this help message and exit'
-    LANG_IPFILTER_META = 'IPFILTER-PATH'
-    LANG_IPFILTER_HELP = ('Path of ipfilter dir/file, wait input if empty. '
+    LANG_HELP_VERSION = 'Show version and exit'
+    LANG_HELP_IPFILTER_META = 'IPFILTER-PATH'
+    LANG_HELP_IPFILTER = ('Path of ipfilter dir/file, wait input if empty. '
                           'IMPORTANT NOTICE: must be the uTorrent setting path!')
-    LANG_HOST_META = 'IP|DOMAIN'
-    LANG_HOST_HELP = 'WebUI host, default '
-    LANG_PORT_META = 'PORT'
-    LANG_PORT_HELP = 'WebUI port, default '
-    LANG_AUTHORIZATION_META = 'USERNAME:PASSWORD'
-    LANG_AUTHORIZATION_HELP = 'WebUI authorization, wait input if required'
-    LANG_EXPIRE_META = 'HOURS'
-    LANG_EXPIRE_HELP = 'Ban expire time for peers, default '
-    LANG_HEADER_META = 'FORMAT'
-    LANG_HEADER_HELP = 'Format of log header, default '
+    LANG_HELP_HOST_META = 'IP|DOMAIN'
+    LANG_HELP_HOST = 'WebUI host, default'
+    LANG_HELP_PORT_META = 'PORT'
+    LANG_HELP_PORT = 'WebUI port, default'
+    LANG_HELP_AUTHORIZATION_META = 'USERNAME:PASSWORD'
+    LANG_HELP_AUTHORIZATION = 'WebUI authorization, wait input if required'
+    LANG_HELP_EXPIRE_META = 'HOURS'
+    LANG_HELP_EXPIRE = 'Ban expire time for peers, default'
+    LANG_HELP_HEADER_META = 'FORMAT'
+    LANG_HELP_HEADER = 'Format of log header, default'
+    LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
+    LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
 
 
 def main() -> None:
@@ -640,30 +706,41 @@ def main() -> None:
         for k, v in inspect.signature(UTorrentWebAPI.__init__).parameters.items()
         if v.default is not v.empty
     }
+    indent = 8
 
     parser = argparse.ArgumentParser(description=__doc__, add_help=False)
-    parser._get_formatter = lambda: argparse.HelpFormatter(parser.prog, 8)
+    parser._get_formatter = lambda: argparse.HelpFormatter(parser.prog, indent)
     parser._positionals.title = LANG_HELP_POSITIONAL
     parser._optionals.title = LANG_HELP_OPTIONAL
+    parser.add_argument('ipfilter', nargs='?', metavar=LANG_HELP_IPFILTER_META,
+                        help=LANG_HELP_IPFILTER)
+    parser.add_argument('-H', '--host', type=str, metavar=LANG_HELP_HOST_META,
+                        help=f'{LANG_HELP_HOST} {kwargs["host"]}')
+    parser.add_argument('-p', '--port', type=int, metavar=LANG_HELP_PORT_META,
+                        help=f'{LANG_HELP_PORT} {kwargs["port"]}')
+    parser.add_argument('-a', '--authorization', type=str, default='',
+                        metavar=LANG_HELP_AUTHORIZATION_META,
+                        help=LANG_HELP_AUTHORIZATION)
+    parser.add_argument('-e', '--expire', type=int, metavar=LANG_HELP_EXPIRE_META,
+            help=f'{LANG_HELP_EXPIRE} {kwargs["expire"] // 3600} {LANG_HELP_EXPIRE_META}')
+    parser.add_argument('-f', '--log-header', type=str, metavar=LANG_HELP_HEADER_META,
+            help=f'{LANG_HELP_HEADER} {kwargs["log_header_fmt"]}'.replace("%", "%%"))
+    parser.add_argument('-P', '--no-fake-progress-check', action='store_true',
+                        help=LANG_HELP_NO_FAKE_PROGRESS_CHECK)
+    parser.add_argument('-L', '--no-serious-leech-check', action='store_true',
+                        help=LANG_HELP_NO_SERIOUS_LEECH_CHECK)
     parser.add_argument('-h', '--help', action='store_true',
                         help=LANG_HELP_HELP)
-    parser.add_argument('ipfilter', nargs='?', metavar=LANG_IPFILTER_META,
-                        help=LANG_IPFILTER_HELP)
-    parser.add_argument('-H', '--host', type=str, metavar=LANG_HOST_META,
-                        help=f'{LANG_HOST_HELP}{kwargs["host"]}')
-    parser.add_argument('-p', '--port', type=int, metavar=LANG_PORT_META,
-                        help=f'{LANG_PORT_HELP}{kwargs["port"]}')
-    parser.add_argument('-a', '--authorization', type=str, default='',
-                        metavar=LANG_AUTHORIZATION_META,
-                        help=LANG_AUTHORIZATION_HELP)
-    parser.add_argument('-e', '--expire', type=int, metavar=LANG_EXPIRE_META,
-            help=f'{LANG_EXPIRE_HELP}{kwargs["expire"] // 3600} {LANG_EXPIRE_META}')
-    parser.add_argument('-f', '--log-header', type=str, metavar=LANG_HEADER_META,
-            help=f'{LANG_HEADER_HELP}{kwargs["log_header_fmt"]}'.replace("%", "%%"))
+    parser.add_argument('-v', '--version', action='store_true',
+                        help=LANG_HELP_VERSION)
     args = parser.parse_args()
 
+    if args.version:
+        print(f'{__app_name__} {__version__}')
+        sys.exit()
+    print(f'{LANG_WELCOME} {__app_name__} {__version__}')
     if args.help:
-        print(f'\n{LANG_HELP_USAGE}:\n        {parser.format_help()[7:]}')
+        print(f'\n{LANG_HELP_USAGE}:\n{" " * indent}{parser.format_help()[7:]}')
         sys.exit()
 
     if args.host:
@@ -676,6 +753,10 @@ def main() -> None:
         kwargs['expire'] = args.expire * 3600
     if args.log_header:
         kwargs['log_header_fmt'] = args.log_header
+    if args.no_fake_progress_check:
+        kwargs['check_fake_progress'] = False
+    if args.no_serious_leech_check:
+        kwargs['check_serious_leech'] = False
     UTorrentWebAPI(args.ipfilter, **kwargs).run()
 
 
