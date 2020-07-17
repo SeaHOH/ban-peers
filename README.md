@@ -26,7 +26,7 @@ Or download and Install from source code
 # Usage
 ```
 $ ban_peers -h
-Welcome using ban_peers 0.1.4
+Welcome using ban_peers 0.1.5
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
@@ -50,6 +50,8 @@ Optional Arguments:
                         Ban expire time for peers, default 12 HOURS
         -f FORMAT, --log-header FORMAT
                         Format of log header, default %H:%M:%S
+        -X, --no-xunlei-reprieve
+                        Banned XunLei directly, no more checking
         -P, --no-fake-progress-check
                         Don't checking fake progress
         -L, --no-serious-leech-check
@@ -60,7 +62,7 @@ Optional Arguments:
 
 ```
 $ ban_peers ~/utorrent -p 12345 -a username:password
-Welcome using ban_peers 0.1.4
+Welcome using ban_peers 0.1.5
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -69,7 +71,7 @@ or
 
 ```
 $ ban-peers
-Welcome using ban_peers 0.1.4
+Welcome using ban_peers 0.1.5
 Please input uTorrent setting folder path or ipfilter file path:
 ~/utorrent
 Please input WebUI username: username

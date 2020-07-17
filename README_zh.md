@@ -26,7 +26,7 @@
 # 使用
 ```
 ban_peers -h
-欢迎使用 ban_peers 0.1.4
+欢迎使用 ban_peers 0.1.5
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
@@ -49,6 +49,8 @@ ban_peers -h
                         屏蔽对端的过期时间, 默认 12 小时
         -f 格式, --log-header 格式
                         日志头格式, 默认 %H:%M:%S
+        -X, --no-xunlei-reprieve
+                        直接屏蔽迅雷，不进行更多的检查
         -P, --no-fake-progress-check
                         不进行虚假进度检查
         -L, --no-serious-leech-check
@@ -59,7 +61,7 @@ ban_peers -h
 
 ```
 ban_peers X:\utorrent -p 12345 -a username:password
-欢迎使用 ban_peers 0.1.4
+欢迎使用 ban_peers 0.1.5
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出, (S)停止, (R)重新开始, (P)暂停/恢复
 ```
@@ -68,7 +70,7 @@ ban_peers X:\utorrent -p 12345 -a username:password
 
 ```
 ban_peers
-欢迎使用 ban_peers 0.1.4
+欢迎使用 ban_peers 0.1.5
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\utorrent
 请输入 WebUI 用户名: username

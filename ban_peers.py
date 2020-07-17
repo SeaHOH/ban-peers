@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
 """
 __app_name__ = 'ban_peers'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __py_min__ = '3.6.0'
@@ -198,7 +198,8 @@ class UTorrentWebAPI:
     def __init__(self, ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
                        username:Optional[str]='', password:Optional[str]='',
                        expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
-                       check_fake_progress:bool=True, check_serious_leech:bool=True) -> None:
+                       xunlei_reprieve:bool=True, check_fake_progress:bool=True,
+                       check_serious_leech:bool=True) -> None:
         while not ipfilter:
             ipfilter = input(LANG_INPUT_IPFILTER)
         if os.path.isdir(ipfilter):
@@ -212,6 +213,7 @@ class UTorrentWebAPI:
         self.req = Request(self.url_root)
         self.set_authorization(username, password)
         self.expire = expire
+        self.xunlei_reprieve = xunlei_reprieve
         self.check_fake_progress = check_fake_progress
         self.check_serious_leech = check_serious_leech
         self.log_header_fmt = log_header_fmt
@@ -432,9 +434,12 @@ class UTorrentWebAPI:
                     reasons.append('Offline')
                 elif LEECHER_XUNLEI.search(peer.client):
                     log(LANG_XUNLEI)
-                    if peer.port in [12345, 15000] or \
-                            not seeding and \
-                            peer.downloaded == peer.relevance == 0:
+                    if not self.xunlei_reprieve or \
+                            peer.port in [12345, 15000] or not seeding and (
+                            peer.downloaded == peer.relevance == 0 or
+                            peer.uploaded > min(size_millesimal, _10m) and (
+                            peer.downloaded * 5 < peer.uploaded or
+                            peer.downloaded * 10 / size_millesimal < peer.relevance)):
                         if reasons and reasons[0] == 'Seeding':
                             del reasons[0]
                         reasons.append('XunLei')
@@ -461,9 +466,9 @@ class UTorrentWebAPI:
                     if seeding:
                         reasons.append('Seeding')
                         reasons.append('Leecher')
-                    elif peer.uploaded > min(size_millesimal, _10m) and \
-                            peer.downloaded * 5 < peer.uploaded or \
-                            peer.downloaded * 2 / size_millesimal < peer.relevance:
+                    elif peer.uploaded > min(size_millesimal, _10m) and (
+                            peer.downloaded * 5 < peer.uploaded or
+                            peer.downloaded * 10 / size_millesimal < peer.relevance):
                         reasons.append('Leecher')
                 if not self.check_serious_leech:
                     pass
@@ -642,6 +647,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_EXPIRE = '屏蔽对端的过期时间, 默认'
     LANG_HELP_HEADER_META = '格式'
     LANG_HELP_HEADER = '日志头格式, 默认'
+    LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
     __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端, 工作于 uTorrent 3。'
@@ -693,6 +699,7 @@ else:
     LANG_HELP_EXPIRE = 'Ban expire time for peers, default'
     LANG_HELP_HEADER_META = 'FORMAT'
     LANG_HELP_HEADER = 'Format of log header, default'
+    LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
 
@@ -725,6 +732,8 @@ def main() -> None:
             help=f'{LANG_HELP_EXPIRE} {kwargs["expire"] // 3600} {LANG_HELP_EXPIRE_META}')
     parser.add_argument('-f', '--log-header', type=str, metavar=LANG_HELP_HEADER_META,
             help=f'{LANG_HELP_HEADER} {kwargs["log_header_fmt"]}'.replace("%", "%%"))
+    parser.add_argument('-X', '--no-xunlei-reprieve', action='store_true',
+                        help=LANG_HELP_NO_XUNLEI_REPRIEVE)
     parser.add_argument('-P', '--no-fake-progress-check', action='store_true',
                         help=LANG_HELP_NO_FAKE_PROGRESS_CHECK)
     parser.add_argument('-L', '--no-serious-leech-check', action='store_true',
@@ -753,6 +762,8 @@ def main() -> None:
         kwargs['expire'] = args.expire * 3600
     if args.log_header:
         kwargs['log_header_fmt'] = args.log_header
+    if args.no_xunlei_reprieve:
+        kwargs['xunlei_reprieve'] = False
     if args.no_fake_progress_check:
         kwargs['check_fake_progress'] = False
     if args.no_serious_leech_check:
