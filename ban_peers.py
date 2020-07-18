@@ -5,10 +5,12 @@
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
 """
 __app_name__ = 'ban_peers'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
-__py_min__ = '3.6.0'
+__copyright__ = '2020 SeaHOH'
+__py_min__ = '3.6'
+__py_max__ = '3.9'
 __webpage__ = 'https://github.com/SeaHOH/ban-peers'
 
 
@@ -195,11 +197,12 @@ class UTorrentWebAPI:
 
     dict: ClassVar[Type[Dict]] = _default_dict
 
-    def __init__(self, ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
-                       username:Optional[str]='', password:Optional[str]='',
-                       expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
-                       xunlei_reprieve:bool=True, check_fake_progress:bool=True,
-                       check_serious_leech:bool=True) -> None:
+    def __init__(self,
+                ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
+                username:Optional[str]='', password:Optional[str]='',
+                expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
+                xunlei_reprieve:bool=True, check_fake_progress:bool=True,
+                check_serious_leech:bool=True, check_private:bool=False) -> None:
         while not ipfilter:
             ipfilter = input(LANG_INPUT_IPFILTER)
         if os.path.isdir(ipfilter):
@@ -209,20 +212,22 @@ class UTorrentWebAPI:
         except:
             raise ValueError(f'{LANG_CONNECTION_REFUSED} {host}:{port}')
         self.file_ipfilter = ipfilter
-        self.url_root = f'http://{host}:{port}/gui/'
-        self.req = Request(self.url_root)
+        self._url_root = f'http://{host}:{port}/gui/'
+        self._req = Request(self._url_root)
         self.set_authorization(username, password)
         self.expire = expire
         self.xunlei_reprieve = xunlei_reprieve
         self.check_fake_progress = check_fake_progress
         self.check_serious_leech = check_serious_leech
+        self.check_private = check_private
         self.log_header_fmt = log_header_fmt
-        self.params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
+        self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
+        self._seeds_private = {}
         self._statistics = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
         self._statistics_uploaded = collections.defaultdict(dict)
         self._statistics_str = ''
-        self.need_save = False
+        self._need_save = False
         self.running = False
         self.init_ipfilter()
         self.init_opener()
@@ -277,7 +282,7 @@ class UTorrentWebAPI:
 
     def set_authorization(self, username:Optional[str], password:Optional[str]) -> None:
         if username or password:
-            self.req.add_header('Authorization',
+            self._req.add_header('Authorization',
                                 'Basic ' + base64.b64encode(
                                 f'{username or ""}:{password or ""}'.encode()
                                 ).decode())
@@ -290,16 +295,16 @@ class UTorrentWebAPI:
                 **params,
                 't': int(time.time())
             })
-            url = f'{self.url_root}{path}?{params_str}'
+            url = f'{self._url_root}{path}?{params_str}'
         else:
-            url = f'{self.url_root}{path}'
-        if self.req.full_url != url:
-            self.req.full_url = url
-        response = self.opener.open(self.req)
+            url = f'{self._url_root}{path}'
+        if self._req.full_url != url:
+            self._req.full_url = url
+        response = self.opener.open(self._req)
         while response.code == 401:
             self.set_authorization(input(LANG_INPUT_USERNAME),
                                    input(LANG_INPUT_PASSWORD))
-            response = self.opener.open(self.req)
+            response = self.opener.open(self._req)
         if response.code == 400 and path != 'token.html':
             self.get_token()
         if response.code != 200:
@@ -307,23 +312,35 @@ class UTorrentWebAPI:
         return response
 
     def get_token(self) -> None:
-        self.req.remove_header('Cookie')
+        self._req.remove_header('Cookie')
         self.cookiejar.clear()
         html = self.request(path='token.html').read().decode()
         self.token = TOKEN.search(html).group(1)
 
-    def get_torrents(self) -> Tuple[List[str], Iterable[List2Attr]]:
-        def gen(torrents):
-            for torrent in torrents:
-                torrent = List2Attr(torrent, 'torrent')
-                if torrent.peers_connected:
-                    yield torrent
+    def is_private(self, hash:str) -> bool:
+        try:
+            return self._seeds_private[hash]
+        except KeyError:
+            response = self.request(params={
+                'action': 'getprops',
+                'hash': hash
+            })
+            self._seeds_private[hash] = private = \
+                    json.load(response)['props'][0]['pex'] == -1
+            return private
 
-        torrents = json.load(self.request(params=self.params_list))
+    def get_torrents(self) -> Iterable[List2Attr]:
+        torrents = json.load(self.request(params=self._params_list))
         if 'torrentc' in torrents:
-            self.params_list['cid'] = torrents['torrentc']
-        return (torrents.get('torrentm', []),
-                gen(torrents.get('torrents') or torrents.get('torrentp', [])))
+            self._params_list['cid'] = torrents['torrentc']
+        for hash in torrents.get('torrentm', []):
+            self._seeds_private.pop(hash, None)
+            self._statistics_uploaded.pop(hash, None)
+        for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
+            torrent = List2Attr(torrent, 'torrent')
+            if torrent.peers_connected and (self.check_private or
+                     not self.is_private(torrent.hash)):
+                yield torrent
 
     def get_files(self, hash:str) -> Iterable[List2Attr]:
         response = self.request(params={
@@ -347,7 +364,7 @@ class UTorrentWebAPI:
         })
 
     def ban_peers(self) -> None:
-        if not self.need_save:
+        if not self._need_save:
             return
         self.collect_statistics()
         ct = int(time.time())
@@ -361,7 +378,7 @@ class UTorrentWebAPI:
         for ip in expire_ips:
             del self.ipfilter[ip]
         self.save_ipfilter()
-        self.need_save = False
+        self._need_save = False
         self.set_setting('ipfilter.enable', 1)
 
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
@@ -373,7 +390,7 @@ class UTorrentWebAPI:
         self.log_ip.pop(ip, None)
         self.ipfilter.pop(ip, None)
         self.ipfilter[ip] = ip.encode(), reason.encode(), str(ct).encode(), ct
-        self.need_save = True
+        self._need_save = True
         print(f'{self.log_header}{LANG_BANNED} '
               f'{ip}:{peer.port}@{peer.country}：{reason}')
 
@@ -388,10 +405,7 @@ class UTorrentWebAPI:
             limit_dict_lenght(self.log_ip, 32)
         
         reasons = []
-        torrents_removed, torrents = self.get_torrents()
-        for hash in torrents_removed:
-            self._statistics_uploaded.pop(hash, None)
-        for torrent in torrents:
+        for torrent in self.get_torrents():
             size_millesimal = int(torrent.size / 1000)
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
@@ -553,7 +567,7 @@ class UTorrentWebAPI:
                 except URLError as e:
                     if isinstance(e.reason, ConnectionRefusedError):
                         print(f'{self.log_header}{LANG_CONNECTION_REFUSED} '
-                              f'WebUI@{self.url_root}', end='\r')
+                              f'WebUI@{self._url_root}', end='\r')
                         time.sleep(10)
                         err_cr = True
                     else:
@@ -628,29 +642,30 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_DOWNLOADED = '已下载'
     LANG_UPLOADED = '已上传'
     LANG_OPERATES_TIP = ('请选择你要执行的操作: '
-                         '(Q)退出, (S)停止, (R)重新开始, (P)暂停/恢复')
+                         '(Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复)
     LANG_HELP_USAGE = '用法'
     LANG_HELP_POSITIONAL = '位置参数'
     LANG_HELP_OPTIONAL = '可选参数'
     LANG_HELP_HELP = '显示此帮助信息并退出'
     LANG_HELP_VERSION = '显示版本信息并退出'
     LANG_HELP_IPFILTER_META = 'IP屏蔽配置路径'
-    LANG_HELP_IPFILTER = ('ipfilter 目录或文件路径, 留空将等待输入。'
+    LANG_HELP_IPFILTER = ('ipfilter 目录或文件路径，留空将等待输入。'
                           '重要提示: 必须是 uTorrent 配置使用的路径!')
     LANG_HELP_HOST_META = 'IP|域名'
-    LANG_HELP_HOST = '网页界面的主机, 默认'
+    LANG_HELP_HOST = '网页界面的主机，默认'
     LANG_HELP_PORT_META = '端口'
-    LANG_HELP_PORT = '网页界面的端口, 默认'
+    LANG_HELP_PORT = '网页界面的端口，默认'
     LANG_HELP_AUTHORIZATION_META = '用户名:密码'
-    LANG_HELP_AUTHORIZATION = '网页界面的授权, 如果需要将等待输入'
+    LANG_HELP_AUTHORIZATION = '网页界面的授权，如果需要将等待输入'
     LANG_HELP_EXPIRE_META = '小时'
-    LANG_HELP_EXPIRE = '屏蔽对端的过期时间, 默认'
+    LANG_HELP_EXPIRE = '屏蔽对端的过期时间，默认'
     LANG_HELP_HEADER_META = '格式'
-    LANG_HELP_HEADER = '日志头格式, 默认'
+    LANG_HELP_HEADER = '日志头格式，默认'
     LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
-    __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端, 工作于 uTorrent 3。'
+    LANG_HELP_PRIVATE_CHECK = '启用对私人种子的检查'
+    __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent 3。'
 else:
     LANG_INPUT_IPFILTER = 'Please input uTorrent setting folder path or ipfilter file path:\n'
     LANG_INPUT_USERNAME = 'Please input WebUI username: '
@@ -702,6 +717,19 @@ else:
     LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
+    LANG_HELP_PRIVATE_CHECK = 'Enable checking for private seeds'
+
+__doc__ = f'''\
+{__app_name__} {__version__}
+
+{__doc__}
+
+{__license__} License Copyright (c) {__copyright__}
+
+Python Version : {__py_min__} - {__py_max__}
+
+Web Page : {__webpage__}
+'''
 
 
 def main() -> None:
@@ -738,6 +766,8 @@ def main() -> None:
                         help=LANG_HELP_NO_FAKE_PROGRESS_CHECK)
     parser.add_argument('-L', '--no-serious-leech-check', action='store_true',
                         help=LANG_HELP_NO_SERIOUS_LEECH_CHECK)
+    parser.add_argument('-R', '--private-check', action='store_true',
+                        help=LANG_HELP_PRIVATE_CHECK)
     parser.add_argument('-h', '--help', action='store_true',
                         help=LANG_HELP_HELP)
     parser.add_argument('-v', '--version', action='store_true',
@@ -768,6 +798,8 @@ def main() -> None:
         kwargs['check_fake_progress'] = False
     if args.no_serious_leech_check:
         kwargs['check_serious_leech'] = False
+    if args.private_check:
+        kwargs['check_private'] = True
     UTorrentWebAPI(args.ipfilter, **kwargs).run()
 
 

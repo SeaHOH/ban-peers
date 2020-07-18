@@ -8,6 +8,8 @@ Execute checking per 10 seconds, the banned time can be specified by the start-u
 
 **Please use this script in local network**, μTorrent Web API does not support HTTPS connections, it is not safe.
 
+[A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via a translator. e.g. translate.google.com
+
 # Installation
 Install from 
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
@@ -26,11 +28,11 @@ Or download and Install from source code
 # Usage
 ```
 $ ban_peers -h
-Welcome using ban_peers 0.1.5
+Welcome using ban_peers 0.1.6
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
-                        [-e HOURS] [-f FORMAT] [-P] [-L] [-h] [-v]
+                        [-e HOURS] [-f FORMAT] [-X] [-P] [-L] [-R] [-h] [-v]
                         [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
@@ -56,13 +58,15 @@ Optional Arguments:
                         Don't checking fake progress
         -L, --no-serious-leech-check
                         Don't checking serious leech
+        -R, --private-check
+                        Enable checking for private seeds
         -h, --help      Show this help message and exit
         -v, --version   Show version and exit
 ```
 
 ```
 $ ban_peers ~/utorrent -p 12345 -a username:password
-Welcome using ban_peers 0.1.5
+Welcome using ban_peers 0.1.6
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -71,7 +75,7 @@ or
 
 ```
 $ ban-peers
-Welcome using ban_peers 0.1.5
+Welcome using ban_peers 0.1.6
 Please input uTorrent setting folder path or ipfilter file path:
 ~/utorrent
 Please input WebUI username: username
