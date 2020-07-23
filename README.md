@@ -4,7 +4,7 @@
 
 Ban-Peers is checking & banning BitTorrent leech peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
-Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges in ipfilter, they will be stored as-is.
+Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
 
 **Please use this script in local network**, μTorrent Web API does not support HTTPS connections, it is not safe.
 
@@ -28,11 +28,11 @@ Or download and Install from source code
 # Usage
 ```
 $ ban_peers -h
-Welcome using ban_peers 0.1.6
+Welcome using Ban-Peers 0.1.7
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
-                        [-e HOURS] [-f FORMAT] [-X] [-P] [-L] [-R] [-h] [-v]
+                        [-e HOURS] [-f FORMAT] [-C] [-X] [-P] [-L] [-R] [-h] [-v]
                         [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
@@ -52,6 +52,8 @@ Optional Arguments:
                         Ban expire time for peers, default 12 HOURS
         -f FORMAT, --log-header FORMAT
                         Format of log header, default %H:%M:%S
+        -C, --resolve-country
+                        Set uTorrent to resolved peer's country code at start-up
         -X, --no-xunlei-reprieve
                         Banned XunLei directly, no more checking
         -P, --no-fake-progress-check
@@ -66,7 +68,8 @@ Optional Arguments:
 
 ```
 $ ban_peers ~/utorrent -p 12345 -a username:password
-Welcome using ban_peers 0.1.6
+Welcome using Ban-Peers 0.1.7
+19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  _**Won't restore after quit**_
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -75,11 +78,12 @@ or
 
 ```
 $ ban-peers
-Welcome using ban_peers 0.1.6
+Welcome using Ban-Peers 0.1.7
 Please input uTorrent setting folder path or ipfilter file path:
 ~/utorrent
 Please input WebUI username: username
-Please input WebUI password: password  # No cover
+Please input WebUI password: password  _**No cover**_
+19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  _**Won't restore after quit**_
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```

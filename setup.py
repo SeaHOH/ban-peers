@@ -30,8 +30,8 @@ setup(
     author_email="seahoh@gmail.com",
     url="https://github.com/SeaHOH/ban-peers",
     license="MIT",
-    description=("Checking & banning BitTorrent leecher peers via Web API, "
-                 "working for uTorrent 3."),
+    description=("Checking & banning BitTorrent leech peers via Web API, "
+                 "working for μTorrent 3."),
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
     keywords="BitTorrent uTorrent anti-leech ban block XunLei",
@@ -48,5 +48,5 @@ setup(
         "Topic :: Utilities"
     ],
     python_requires=">=3.6",
-    entry_points={'console_scripts': ['ban_peers=ban_peers:main']},
+    entry_points={"console_scripts": ["ban_peers=ban_peers:main"]},
 )

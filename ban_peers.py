@@ -4,8 +4,8 @@
 """\
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
 """
-__app_name__ = 'ban_peers'
-__version__ = '0.1.6'
+__app_name__ = 'Ban-Peers'
+__version__ = '0.1.7'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -30,7 +30,7 @@ from urllib.request import OpenerDirector, Request
 from socket import inet_pton, socket, AF_INET, AF_INET6
 from shutil import get_terminal_size
 
-from typing import * 
+from typing import *
 from http.client import HTTPResponse
 
 ParamValue = Union[int, str]
@@ -239,7 +239,8 @@ class UTorrentWebAPI:
         ipfilter_range = []
         ct = int(time.time())
         ct_bytes = str(ct).encode()
-        for line in open(self.file_ipfilter, 'rb'):
+        for line in (os.path.exists(self.file_ipfilter) and
+                     open(self.file_ipfilter, 'rb') or ()):
             ip, _, rest = [p.strip() for p in line.partition(b'#')]
             if b'-' in ip:
                 # store IP range as is
@@ -356,12 +357,14 @@ class UTorrentWebAPI:
         })
         return (List2Attr(peer, 'peer') for peer in json.load(response)['peers'][1])
 
-    def set_setting(self, s:str, v:ParamValue) -> None:
+    def set_setting(self, s:str, v:Union[int, str, bool]) -> None:
         self.request(params={
             'action': 'setsetting',
             's': s,
-            'v': v
+            'v': isinstance(v, bool) and int(v) or v
         })
+        if s != 'ipfilter.enable':
+            print(f'{self.log_header}{LANG_SET_SETTING} {s!r} {LANG_TO} {v}')
 
     def ban_peers(self) -> None:
         if not self._need_save:
@@ -379,7 +382,7 @@ class UTorrentWebAPI:
             del self.ipfilter[ip]
         self.save_ipfilter()
         self._need_save = False
-        self.set_setting('ipfilter.enable', 1)
+        self.set_setting('ipfilter.enable', True)
 
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
@@ -403,7 +406,7 @@ class UTorrentWebAPI:
                   f'{LANG_FOUND}{msg}: {peer.client}@{ip_port}')
             self.log_ip[ip] = True
             limit_dict_lenght(self.log_ip, 32)
-        
+
         reasons = []
         for torrent in self.get_torrents():
             size_millesimal = int(torrent.size / 1000)
@@ -429,7 +432,9 @@ class UTorrentWebAPI:
                     except KeyError:
                         self._statistics_progress[ip_port][hash] = \
                                 last_uploaded, t = peer.uploaded, None
-                    if peer.uploaded - last_uploaded > size_millesimal * 1.5:
+                    if peer.inactive > 10:
+                        self._statistics_progress[ip_port][hash] = last_uploaded, None
+                    elif peer.uploaded - last_uploaded > size_millesimal * 1.5:
                         if t is None:
                             self._statistics_progress[ip_port][hash] = last_uploaded, ct
                         elif ct - t > 60:  # did not recovered within one minute
@@ -549,12 +554,13 @@ class UTorrentWebAPI:
     def run(self, show_operations: bool=True) -> None:
         def log(msg):
             print(f'{self.log_header}uTorrent {LANG_A_NAME}{msg}{LANG_RUNNING}')
-        
+
         if self.running:
             return
         self.running = True
         pause = False
         ss = False
+        self.set_setting('bt.use_rangeblock', False)
         log(LANG_START)
         while True:
             if not self.running:
@@ -626,6 +632,8 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_PROCEED = '恢复'
     LANG_RUNNING = '运行'
     LANG_A_NAME = '自动屏蔽脚本'
+    LANG_SET_SETTING = '设定 uTorrent 配置'
+    LANG_TO = '到'
     LANG_ERROR_OCCURRED = '发生错误'
     LANG_CONNECTION_REFUSED = '无法连接'
     LANG_DISCONNECTED = '已断开'
@@ -642,7 +650,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_DOWNLOADED = '已下载'
     LANG_UPLOADED = '已上传'
     LANG_OPERATES_TIP = ('请选择你要执行的操作: '
-                         '(Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复)
+                         '(Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复')
     LANG_HELP_USAGE = '用法'
     LANG_HELP_POSITIONAL = '位置参数'
     LANG_HELP_OPTIONAL = '可选参数'
@@ -661,6 +669,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_EXPIRE = '屏蔽对端的过期时间，默认'
     LANG_HELP_HEADER_META = '格式'
     LANG_HELP_HEADER = '日志头格式，默认'
+    LANG_HELP_RESOLVE_COUNTRY = '启动时，设置 uTorrent 解析对端国家代码'
     LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
@@ -679,6 +688,8 @@ else:
     LANG_PROCEED = 'proceed'
     LANG_RUNNING = ' running'
     LANG_A_NAME = 'auto-banning script '
+    LANG_SET_SETTING = 'Set uTorrent setting'
+    LANG_TO = 'to'
     LANG_ERROR_OCCURRED = 'error occurred'
     LANG_CONNECTION_REFUSED = 'unable to connect'
     LANG_DISCONNECTED = 'DISCONNECTED'
@@ -714,6 +725,7 @@ else:
     LANG_HELP_EXPIRE = 'Ban expire time for peers, default'
     LANG_HELP_HEADER_META = 'FORMAT'
     LANG_HELP_HEADER = 'Format of log header, default'
+    LANG_HELP_RESOLVE_COUNTRY = 'Set uTorrent to resolved peer\'s country code at start-up'
     LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
@@ -726,9 +738,9 @@ __doc__ = f'''\
 
 {__license__} License Copyright (c) {__copyright__}
 
-Python Version : {__py_min__} - {__py_max__}
+Python Version: {__py_min__} - {__py_max__}
 
-Web Page : {__webpage__}
+Web Page: {__webpage__}
 '''
 
 
@@ -760,6 +772,8 @@ def main() -> None:
             help=f'{LANG_HELP_EXPIRE} {kwargs["expire"] // 3600} {LANG_HELP_EXPIRE_META}')
     parser.add_argument('-f', '--log-header', type=str, metavar=LANG_HELP_HEADER_META,
             help=f'{LANG_HELP_HEADER} {kwargs["log_header_fmt"]}'.replace("%", "%%"))
+    parser.add_argument('-C', '--resolve-country', action='store_true',
+                        help=LANG_HELP_RESOLVE_COUNTRY)
     parser.add_argument('-X', '--no-xunlei-reprieve', action='store_true',
                         help=LANG_HELP_NO_XUNLEI_REPRIEVE)
     parser.add_argument('-P', '--no-fake-progress-check', action='store_true',
@@ -800,7 +814,11 @@ def main() -> None:
         kwargs['check_serious_leech'] = False
     if args.private_check:
         kwargs['check_private'] = True
-    UTorrentWebAPI(args.ipfilter, **kwargs).run()
+    ut = UTorrentWebAPI(args.ipfilter, **kwargs)
+    if args.resolve_country:
+        ut.set_setting('peer.resolve_country', True)
+        ut.set_setting('resolve_peerips', True)
+    ut.run()
 
 
 if __name__ == '__main__':

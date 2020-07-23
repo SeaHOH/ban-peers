@@ -4,7 +4,7 @@
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 μTorrent 3。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
 
-每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只屏蔽 1 小时。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽，它们会被原样保存。
+每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只屏蔽 1 小时。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
 
 **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
 
@@ -28,11 +28,12 @@
 # 使用
 ```
 ban_peers -h
-欢迎使用 ban_peers 0.1.6
+欢迎使用 Ban-Peers 0.1.7
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
-                        [-f 格式] [-X] [-P] [-L] [-R] [-h] [-v] [IP屏蔽配置路径]
+                        [-f 格式] [-C] [-X] [-P] [-L] [-R] [-h] [-v]
+                        [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent 3。
 
@@ -51,6 +52,8 @@ ban_peers -h
                         屏蔽对端的过期时间，默认 12 小时
         -f 格式, --log-header 格式
                         日志头格式，默认 %H:%M:%S
+        -C, --resolve-country
+                        启动时，设置 uTorrent 解析对端国家代码
         -X, --no-xunlei-reprieve
                         直接屏蔽迅雷，不进行更多的检查
         -P, --no-fake-progress-check
@@ -65,7 +68,8 @@ ban_peers -h
 
 ```
 ban_peers X:\utorrent -p 12345 -a username:password
-欢迎使用 ban_peers 0.1.6
+欢迎使用 Ban-Peers 0.1.7
+19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  _**脚本退出后不会自动恢复**_
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
@@ -74,11 +78,12 @@ ban_peers X:\utorrent -p 12345 -a username:password
 
 ```
 ban_peers
-欢迎使用 ban_peers 0.1.6
+欢迎使用 Ban-Peers 0.1.7
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\utorrent
 请输入 WebUI 用户名: username
-请输入 WebUI 密码: password  # 没有遮掩
+请输入 WebUI 密码: password  _**没有遮掩**_
+19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  _**脚本退出后不会自动恢复**_
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
