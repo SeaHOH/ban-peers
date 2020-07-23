@@ -599,7 +599,7 @@ class UTorrentWebAPI:
                         sys.exit()
                     elif k in b'sS':
                         self.running = False
-                        if __name__ == '__main__':
+                        if __name__ == '__main__' or sys.argv[0].endswith(__name__):
                             log(LANG_QUIT)
                         else:
                             log(LANG_STOP)

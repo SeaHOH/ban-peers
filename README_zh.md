@@ -10,6 +10,8 @@
 
 给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/issues/1)。
 
+极力抵制吸血，这是我们应有的权利。如果你觉得 Ban-Peers 还不错，请向朋友推荐它，谢谢。
+
 # 安装
 安装自
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
@@ -66,33 +68,36 @@ ban_peers -h
         -v, --version   显示版本信息并退出
 ```
 
-```
+```markdown
 ban_peers X:\utorrent -p 12345 -a username:password
 欢迎使用 Ban-Peers 0.1.7
-19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  _**脚本退出后不会自动恢复**_
+19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
 
 或者
 
-```
+```markdown
 ban_peers
 欢迎使用 Ban-Peers 0.1.7
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\utorrent
 请输入 WebUI 用户名: username
-请输入 WebUI 密码: password  _**没有遮掩**_
-19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  _**脚本退出后不会自动恢复**_
+请输入 WebUI 密码: password  **_没有遮掩_**
+19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
 
 - 退出：退出此脚本。
-- 停止：如果是直接运行此脚本，则等同退出，否则只是停止检查。
+- 停止：如果是通过导入模块方式运行此脚本，只是停止检查，否则等同退出。
 - 重新开始：重新加载 ipfilter，对于手动修改 ipfilter 非常有用。
 - 暂停：暂停检查，对于手动修改 ipfilter 非常有用。
 - 恢复：只是恢复检查。
+
+# 遇到麻烦/有其它想法
+访问 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)并贴出它们，也许有人能够帮到你。
 
 # 相关项目
 - μTorrent

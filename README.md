@@ -10,6 +10,8 @@ Execute checking per 10 seconds, the banned time can be specified by the start-u
 
 [A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via a translator. e.g. translate.google.com
 
+Resist leech strongly, this is our own rights. If you feels Ban-Peers a good work, please recommend it to your friends, Thanks.
+
 # Installation
 Install from 
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
@@ -66,33 +68,36 @@ Optional Arguments:
         -v, --version   Show version and exit
 ```
 
-```
+```markdown
 $ ban_peers ~/utorrent -p 12345 -a username:password
 Welcome using Ban-Peers 0.1.7
-19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  _**Won't restore after quit**_
+19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
 
 or
 
-```
+```markdown
 $ ban-peers
 Welcome using Ban-Peers 0.1.7
 Please input uTorrent setting folder path or ipfilter file path:
 ~/utorrent
 Please input WebUI username: username
-Please input WebUI password: password  _**No cover**_
-19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  _**Won't restore after quit**_
+Please input WebUI password: password  **_No cover_**
+19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
 
 - Quit: exit the script.
-- Stop: same as Quit if run script direct, or stop checking.
+- Stop: stop checking if run script via import as package, or same as Quit.
 - Restart: reload ipfilter, it is useful when manually modify ipfilter.
 - Pause: pause checking, it is useful when manually modify ipfilter.
 - Proceed: just proceed checking.
+
+# Got troubles/ideas
+Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post them, maybe someone can help you.
 
 # Related projects
 - μTorrent
