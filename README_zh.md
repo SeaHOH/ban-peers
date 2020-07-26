@@ -2,9 +2,11 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 μTorrent 3。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
+通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
 
 每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只屏蔽 1 小时。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
+
+无法在未提供 `getpeers` API 的旧版本 μTorrent 中正常工作。
 
 **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
 
@@ -28,16 +30,44 @@
 - Python >= 3.6
 
 # 使用
+首先，必须在 μTorrent 设置中启用网页界面；然后运行 Ban-Peers 于指定的 ipfilter.dat 文件。
+
+IP 屏蔽配置文件 ipfilter.dat，其通常位于以下几种情况对应的路径。
+```
+Mac:
+        ~/Library/Application Support/uTorrent
+        或
+        /Applications/uTorrent.app/Contents/MacOS
+Unix utserver:
+        使用 utserver 参数 "-settingspath" 指定配置文件夹路径。
+Win XP:
+        C:\Documents and Settings\<用户名>\Application Data\uTorrent
+Win 7 及以上:
+        C:\Users\<用户名>\AppData\Roaming\uTorrent
+便携模式:
+        μTorrent 安装文件夹路径。要启用此模式，先把 settings.dat 文件放入其中。
+PortableApps:
+        <PortableApps 文件夹>\App\uTorrent
+Android:
+        我不知道相关的一切信息，欢迎帮助补充此信息，包括 Android 可能是不适用的。
+网络文件:
+        在其它设备上运行 μTorrent，并配置其配置文件夹为网络路径。
+        例如
+        SMB/CIFS  //machine1/share/uTorrent
+        NFS       mount –t nfs 192.168.1.20:/var/lib/utserver /mnt/utserver
+                  /mnt/utserver
+```
+
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.1.7
+欢迎使用 Ban-Peers 0.1.8
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
                         [-f 格式] [-C] [-X] [-P] [-L] [-R] [-h] [-v]
                         [IP屏蔽配置路径]
 
-通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent 3。
+通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent。
 
 位置参数:
         IP屏蔽配置路径  ipfilter 目录或文件路径，留空将等待输入。重要提示:
@@ -69,8 +99,8 @@ ban_peers -h
 ```
 
 ```markdown
-ban_peers X:\utorrent -p 12345 -a username:password
-欢迎使用 Ban-Peers 0.1.7
+C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
+欢迎使用 Ban-Peers 0.1.8
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
@@ -79,10 +109,10 @@ ban_peers X:\utorrent -p 12345 -a username:password
 或者
 
 ```markdown
-ban_peers
-欢迎使用 Ban-Peers 0.1.7
+C:\Users\username>ban_peers
+欢迎使用 Ban-Peers 0.1.8
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
-X:\utorrent
+X:\uTorrent
 请输入 WebUI 用户名: username
 请输入 WebUI 密码: password  **_没有遮掩_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
@@ -92,8 +122,8 @@ X:\utorrent
 
 - 退出：退出此脚本。
 - 停止：如果是通过导入模块方式运行此脚本，只是停止检查，否则等同退出。
-- 重新开始：重新加载 ipfilter，对于手动修改 ipfilter 非常有用。
-- 暂停：暂停检查，对于手动修改 ipfilter 非常有用。
+- 重新开始：重新加载 ipfilter.dat，对于手动修改 ipfilter.dat 非常有用。
+- 暂停：暂停检查，对于手动修改 ipfilter.dat 非常有用。
 - 恢复：只是恢复检查。
 
 # 遇到麻烦/有其它想法

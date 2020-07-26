@@ -2,9 +2,11 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers is checking & banning BitTorrent leech peers via Web API, working for μTorrent 3. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
+Ban-Peers is checking & banning BitTorrent leech peers via Web API, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
 Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
+
+Does not work in old versions of μTorrent which did not provided API `getpeers`.
 
 **Please use this script in local network**, μTorrent Web API does not support HTTPS connections, it is not safe.
 
@@ -28,20 +30,48 @@ Or download and Install from source code
 - Python >= 3.6
 
 # Usage
+First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for specified ipfilter.dat file.
+
+Setting file ipfilter.dat, it is generally located in the path corresponding to the following cases.
+```
+Mac:
+        ~/Library/Application Support/uTorrent
+        or
+        /Applications/uTorrent.app/Contents/MacOS
+Unix utserver:
+        use utserver argument "-settingspath" to specify settings folder path.
+Win XP:
+        C:\Documents and Settings\<username>\Application Data\uTorrent
+Win 7 & above:
+        C:\Users\<username>\AppData\Roaming\uTorrent
+Portable mode:
+        μTorrent installation folder path. To enable this mode, first put file settings.dat into it.
+PortableApps:
+        <PortableApps folder>\App\uTorrent
+Android:
+        I don't know any informations about it, welcome to help add those informations, even Android is unavailable。
+Network File:
+        run μTorrent at other machine, setup the settings folder as a network file path.
+        e.g.
+        NFS       mount –t nfs 192.168.1.20:/var/lib/utserver /mnt/utserver
+                  /mnt/utserver
+        SMB/CIFS  //machine1/share/uTorrent
+```
+
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.1.7
+Welcome using Ban-Peers 0.1.8
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
                         [-e HOURS] [-f FORMAT] [-C] [-X] [-P] [-L] [-R] [-h] [-v]
                         [IPFILTER-PATH]
 
-Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
+Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
 
 Positional Arguments:
         IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty.
-                        IMPORTANT NOTICE: must be the uTorrent setting path!
+                        IMPORTANT NOTICE: must be the uTorrent settings path!
 
 Optional Arguments:
         -H IP|DOMAIN, --host IP|DOMAIN
@@ -69,8 +99,8 @@ Optional Arguments:
 ```
 
 ```markdown
-$ ban_peers ~/utorrent -p 12345 -a username:password
-Welcome using Ban-Peers 0.1.7
+$ ban_peers -p 12345 -a username:password /var/lib/utserver
+Welcome using Ban-Peers 0.1.8
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
@@ -80,9 +110,9 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.1.7
-Please input uTorrent setting folder path or ipfilter file path:
-~/utorrent
+Welcome using Ban-Peers 0.1.8
+Please input uTorrent settings folder path or ipfilter file path:
+/var/lib/utserver
 Please input WebUI username: username
 Please input WebUI password: password  **_No cover_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
@@ -92,8 +122,8 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 - Quit: exit the script.
 - Stop: stop checking if run script via import as package, or same as Quit.
-- Restart: reload ipfilter, it is useful when manually modify ipfilter.
-- Pause: pause checking, it is useful when manually modify ipfilter.
+- Restart: reload ipfilter.dat, it is useful when manually modify ipfilter.dat.
+- Pause: pause checking, it is useful when manually modify ipfilter.dat.
 - Proceed: just proceed checking.
 
 # Got troubles/ideas

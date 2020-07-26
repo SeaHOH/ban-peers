@@ -31,7 +31,7 @@ setup(
     url="https://github.com/SeaHOH/ban-peers",
     license="MIT",
     description=("Checking & banning BitTorrent leech peers via Web API, "
-                 "working for μTorrent 3."),
+                 "working for μTorrent."),
     long_description=read_file("README.md"),
     long_description_content_type="text/markdown",
     keywords="BitTorrent uTorrent anti-leech ban block XunLei",

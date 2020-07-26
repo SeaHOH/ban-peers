@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """\
-Checking & banning BitTorrent leech peers via Web API, working for uTorrent 3.
+Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -42,11 +42,13 @@ if sys.version_info < (3, 7):
 else:
     _default_dict = dict
 _linesep = os.linesep.replace('\r\n', '\n').encode()
-_max_columns = get_terminal_size().columns - 1
-if _max_columns < 79 and \
-        os.name == 'nt' and os.system('mode con: cols=80') == 0 or \
-        os.name != 'nt' and os.system('stty columns 80') == 0:
-    _max_columns = 79
+_default_columns = 80
+_max_columns = get_terminal_size().columns
+if _max_columns < _default_columns and (
+        os.name == 'nt' and os.system(f'mode con: cols={_default_columns}') == 0 or
+        os.name != 'nt' and os.system(f'stty columns {_default_columns}') == 0):
+    _max_columns = _default_columns
+_max_columns -= 1
 _10m = 1024 * 1024 * 10
 _100m = _10m * 10
 
@@ -674,9 +676,9 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
     LANG_HELP_PRIVATE_CHECK = '启用对私人种子的检查'
-    __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent 3。'
+    __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent。'
 else:
-    LANG_INPUT_IPFILTER = 'Please input uTorrent setting folder path or ipfilter file path:\n'
+    LANG_INPUT_IPFILTER = 'Please input uTorrent settings folder path or ipfilter file path:\n'
     LANG_INPUT_USERNAME = 'Please input WebUI username: '
     LANG_INPUT_PASSWORD = 'Please input WebUI password: '
     LANG_WELCOME = 'Welcome using'
@@ -714,7 +716,7 @@ else:
     LANG_HELP_VERSION = 'Show version and exit'
     LANG_HELP_IPFILTER_META = 'IPFILTER-PATH'
     LANG_HELP_IPFILTER = ('Path of ipfilter dir/file, wait input if empty. '
-                          'IMPORTANT NOTICE: must be the uTorrent setting path!')
+                          'IMPORTANT NOTICE: must be the uTorrent settings path!')
     LANG_HELP_HOST_META = 'IP|DOMAIN'
     LANG_HELP_HOST = 'WebUI host, default'
     LANG_HELP_PORT_META = 'PORT'
