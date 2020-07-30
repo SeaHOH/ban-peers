@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.1.8'
+__version__ = '0.1.9'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -53,9 +53,11 @@ _10m = 1024 * 1024 * 10
 _100m = _10m * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
-LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(unknown.+?/)?7\.)', re.I)
+LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(?:unknown.+?/)?7\.)', re.I)
 # DanDan, DLBT, Vagaa, Xfplay, Soda
 LEECHER_PLAYER = re.compile('^(?:dan|dl|vag|xf|sod)', re.I)
+# Unknown FW/6.8.5.3 -> FrostWire/6.8.5  see github.com/frostwire/frostwire#921
+LEECHER_FAKE = re.compile('^(?:unknown )?(?:fw|frostwire)/\d\.\d\.\d\.\d', re.I)
 # QQ, Baidu, TuoTu, FlashGet
 LEECHER_OTHER = re.compile('^(?:q[qd]|bn|tuo|flashg)', re.I)
 
@@ -474,7 +476,8 @@ class UTorrentWebAPI:
                         reasons.append('Player')
                     elif peer.downloaded == peer.relevance == 0:
                         reasons.append('Player')
-                elif peer.client.startswith('[FAKE]'):
+                elif peer.client.startswith('[FAKE]') or \
+                        LEECHER_FAKE.search(peer.client):
                     log(LANG_FACK_CLIENT)
                     if seeding:
                         reasons.append('Seeding')
@@ -524,6 +527,8 @@ class UTorrentWebAPI:
                         reasons.append('Leecher')
                         if size_last_downloaded > _10m:
                             self._statistics_uploaded[hash].pop(ip_port, None)
+                            peer.downloaded += _downloaded
+                            peer.uploaded += _uploaded
                 if reasons:
                     if not seeding:
                         self._statistics_progress.pop(ip_port, None)
