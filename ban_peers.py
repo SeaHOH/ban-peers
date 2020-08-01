@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.1.9'
+__version__ = '0.1.10'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -54,12 +54,12 @@ _100m = _10m * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(?:unknown.+?/)?7\.)', re.I)
-# DanDan, DLBT, Vagaa, Xfplay, Soda
-LEECHER_PLAYER = re.compile('^(?:dan|dl|vag|xf|sod)', re.I)
+# DanDan, DLBT, Vagaa, Xfplay, Soda, uTorrent Web
+LEECHER_PLAYER = re.compile('^(?:dan|dl|vag|xf|sod|(?:unknown )?uw)', re.I)
 # Unknown FW/6.8.5.3 -> FrostWire/6.8.5  see github.com/frostwire/frostwire#921
 LEECHER_FAKE = re.compile('^(?:unknown )?(?:fw|frostwire)/\d\.\d\.\d\.\d', re.I)
 # QQ, Baidu, TuoTu, FlashGet
-LEECHER_OTHER = re.compile('^(?:q[qd]|bn|tuo|flashg)', re.I)
+LEECHER_OTHER = re.compile('^(?:(?:unknown )?(?:q[qd]|bn)|tuo|flashg)', re.I)
 
 
 try:
@@ -558,7 +558,7 @@ class UTorrentWebAPI:
     def log_header(self) -> str:
         return f'{CLL}{time.strftime(self.log_header_fmt, time.localtime())} '
 
-    def run(self, show_operations: bool=True) -> None:
+    def run(self, show_operations:bool=True) -> None:
         def log(msg):
             print(f'{self.log_header}uTorrent {LANG_A_NAME}{msg}{LANG_RUNNING}')
 
