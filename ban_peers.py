@@ -53,13 +53,37 @@ _10m = 1024 * 1024 * 10
 _100m = _10m * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
+# The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
+# "-" prefix and suffix were removed by class `List2Attr`
 LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(?:unknown.+?/)?7\.)', re.I)
-# DanDan, DLBT, Vagaa, Xfplay, Soda, uTorrent Web
-LEECHER_PLAYER = re.compile('^(?:dan|dl|vag|xf|sod|(?:unknown )?uw)', re.I)
-# Unknown FW/6.8.5.3 -> FrostWire/6.8.5  see github.com/frostwire/frostwire#921
-LEECHER_FAKE = re.compile('^(?:unknown )?(?:fw|frostwire)/\d\.\d\.\d\.\d', re.I)
-# QQ, Baidu, TuoTu, FlashGet
-LEECHER_OTHER = re.compile('^(?:(?:unknown )?(?:q[qd]|bn)|tuo|flashg)', re.I)
+LEECHER_PLAYER = re.compile('''
+^(?:
+    dan     |           # DanDan (DL)
+    sod     |           # Soda
+    vag     |           # Vagaa (VG)
+    (?:unknown\s)?(?:
+        dl      |       # DanDan/DLBT (DL)
+        uw      |       # uTorrent Web (UW)
+        xf              # Xfplay (XF)
+    )
+)
+''', re.I|re.X)
+LEECHER_FAKE = re.compile('''
+^(?:unknown )?
+(?:fw|frostwire)/\d\.\d\.\d\.\d     # Unknown FW/6.8.5.3 -> FrostWire/6.8.5
+                                    # see github.com/frostwire/frostwire#921
+''', re.I|re.X)
+LEECHER_OTHER = re.compile('''
+^(?:
+    caca    |           # Cacaoweb
+    flashg  |           # FlashGet (FG)
+    tuo     |           # TuoTu (TT), be careful avoid match tTorrent (tT)
+    (?:unknown\s)?(?:
+        bn      |       # Baidu (BN)
+        q[qd]           # QQ (QD)
+    )
+)
+''', re.I|re.X)
 
 
 try:
