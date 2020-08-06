@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.1.10'
+__version__ = '0.1.11'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -55,35 +55,123 @@ _100m = _10m * 10
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 # The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
 # "-" prefix and suffix were removed by class `List2Attr`
-LEECHER_XUNLEI = re.compile('^(?:xl|xun|sd|(?:unknown.+?/)?7\.)', re.I)
+LEECHER_XUNLEI = re.compile('''
+^(?:
+    7\.|sd|xl|xun|
+    unknown\s(?:
+        bt/7\.(?!(?:9|10)\.\d\D)|
+        sd|xl
+    )
+)
+''', re.I|re.X)
 LEECHER_PLAYER = re.compile('''
 ^(?:
-    dan     |           # DanDan (DL)
-    sod     |           # Soda
-    vag     |           # Vagaa (VG)
-    (?:unknown\s)?(?:
-        dl      |       # DanDan/DLBT (DL)
-        uw      |       # uTorrent Web (UW)
-        xf              # Xfplay (XF)
+    dan               | # DanDan (DL)
+    DLB|dlb           | # DLBT (DL)
+    [Qq]vo            | # Qvod (QVOD) [Dead]
+    [Ss]od            | # Soda
+    [Tt]orc           | # Torch (TB)
+    [Vv]ag            | # Vagaa (VG) [Dead?]
+    [Xx]fp            | # Xfplay (XF)
+    Unknown\s(?:
+        DL            | # DanDan/DLBT (DL)
+        QVO           | # Qvod (QVOD) [Dead]
+        TB            | # Torch (TB)
+        UW            | # uTorrent Web (UW)
+        VG            | # Vagaa (VG) [Dead?]
+        XF              # Xfplay (XF)
     )
 )
-''', re.I|re.X)
-LEECHER_FAKE = re.compile('''
-^(?:unknown )?
-(?:fw|frostwire)/\d\.\d\.\d\.\d     # Unknown FW/6.8.5.3 -> FrostWire/6.8.5
-                                    # see github.com/frostwire/frostwire#921
-''', re.I|re.X)
+''', re.X)
+# Offline Download Servers (does not used at present)
+# bitport.io [Unknown ID/UA]
+# put.io [Unknown ID/UA]
+# justseed.it [Unknown UA] [Dead]
+# seedboxws.com [Unknown ID/UA]
+# seedr.cc [Unknown ID/UA]
+# yourseedbox.com [Unknown ID/UA]
+LEECHER_OFFLINE = re.compile('''
+^(?:
+    [Jj]usts          | # Justseed.it client [Dead]
+    Unknown\s(?:
+        JS              # Justseed.it client [Dead]
+    )
+)
+''', re.X)
 LEECHER_OTHER = re.compile('''
 ^(?:
-    caca    |           # Cacaoweb
-    flashg  |           # FlashGet (FG)
-    tuo     |           # TuoTu (TT), be careful avoid match tTorrent (tT)
-    (?:unknown\s)?(?:
-        bn      |       # Baidu (BN)
-        q[qd]           # QQ (QD)
+    caca              | # Cacaoweb
+    [Ff]lash[Gg]      | # FlashGet (FG)
+    .+?ransp          | # Net Transport (NX) - need more infomation
+    [Qq]{2}           | # QQ (QD)
+    [Tt]uo            | # TuoTu (TT)
+    Unknown\s(?:
+        BN            | # Baidu (BN)
+        FG            | # FlashGet (FG)
+        NX            | # Net Transport (NX)
+        QD            | # QQ (QD)
+        TT              # TuoTu (TT)
     )
 )
-''', re.I|re.X)
+''', re.X)
+# Did not included in uTorrent's peer identification
+# https://www.bittorrent.org/beps/bep_0020.html
+# https://wiki.theory.org/BitTorrentSpecification
+# Most of them has been died
+CLIENT_UNKNOWN = re.compile('''
+^Unknown\s(?!
+    \d\dRS            | # Rufus [Dead]
+    7T                | # aTorrent for Android
+    AL                | # AllPeers [Dead]
+    AT                | # Artemis [Dead]
+    BE                | # Baretorrent [Dead?]
+    BitS              | # BitSpirit
+    BL                | # BitBlinder [Dead]
+                        # BitCometLite
+    BOW               | # Bits On Wheels [Dead]
+    BP                | # BitTorrent Pro (Azureus + spyware) [Dead?]
+    BS                | # BTSlave [Dead]
+    Bt                | # Bt [library]
+    #BT               | # BBtor [Dead]
+    BT/7\.(?:9|10)\.\d\D| # mainline BitTorrent [versions >= 7.9]
+    BW                | # BitWombat [Dead]
+    DP                | # Propagate Data Client [Dead]
+    FC                | # FileCroc [Dead]
+    FD                | # Free Download Manager
+    FW                | # FrostWire
+    FX                | # Freebox BitTorrent
+    GS                | # GSTorrent [Dead]
+    HK                | # Hekate [Dead?]
+    HM                | # hMule [Dead]
+    IL                | # iLivid [Dead]
+    JT                | # JavaTorrent
+    KG                | # KGet [Dead]
+    LC                | # LeechCraft
+    LH                | # LH-ABC [Dead]
+    #M\d-\d           | # Bram's old BitTorrent and many other clients [Dead]
+    ML                | # MLdonkey
+    MK                | # Meerkat [Dead]
+    MO                | # MonoTorrent [Dead?]
+    NE                | # BT Next Evolution [Dead?]
+    OS                | # OneSwarm
+    OT                | # OmegaTorrent [Dead]
+    PD                | # Pando [Dead]
+    PI                | # PicoTorrent
+    PT                | # PHPTracker [Dead]
+    #Q\d-\d           | # Queen Bee [Dead]
+    #Q\d[a-zA-Z0-9]{2}| # BTQueue [Dead]
+    RZ                | # RezTorrent [Dead?]
+    SB                | # ~Swiftbit [Dead]
+    SM                | # SoMud [Dead]
+    ST                | # SymTorrent [Dead]
+    st                | # sharktorrent [Dead]
+    tT                | # tTorrent
+    WD                | # WebTorrent Desktop
+    WW                | # WebTorrent [library]
+    WY                | # FireTorrent [Dead]
+    XBT                 # XBT Client [Dead?]
+)
+''', re.X)
 
 
 try:
@@ -230,7 +318,8 @@ class UTorrentWebAPI:
                 username:Optional[str]='', password:Optional[str]='',
                 expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
                 xunlei_reprieve:bool=True, check_fake_progress:bool=True,
-                check_serious_leech:bool=True, check_private:bool=False) -> None:
+                check_serious_leech:bool=True, check_private:bool=False,
+                log_unknown=False) -> None:
         while not ipfilter:
             ipfilter = input(LANG_INPUT_IPFILTER)
         if os.path.isdir(ipfilter):
@@ -248,6 +337,7 @@ class UTorrentWebAPI:
         self.check_fake_progress = check_fake_progress
         self.check_serious_leech = check_serious_leech
         self.check_private = check_private
+        self.log_unknown = log_unknown
         self.log_header_fmt = log_header_fmt
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
         self._seeds_private = {}
@@ -500,8 +590,7 @@ class UTorrentWebAPI:
                         reasons.append('Player')
                     elif peer.downloaded == peer.relevance == 0:
                         reasons.append('Player')
-                elif peer.client.startswith('[FAKE]') or \
-                        LEECHER_FAKE.search(peer.client):
+                elif peer.client.startswith('[FAKE]'):
                     log(LANG_FACK_CLIENT)
                     if seeding:
                         reasons.append('Seeding')
@@ -553,6 +642,8 @@ class UTorrentWebAPI:
                             self._statistics_uploaded[hash].pop(ip_port, None)
                             peer.downloaded += _downloaded
                             peer.uploaded += _uploaded
+                if self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
+                    log(LANG_UNKNOWN_CLIENT)
                 if reasons:
                     if not seeding:
                         self._statistics_progress.pop(ip_port, None)
@@ -677,6 +768,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_OFFLINE_SERVER = '离线下载服务器'
     LANG_LEECHER_CLIENT = '吸血客户端'
     LANG_LEECHER_SUSPECTED = '高度疑似吸血'
+    LANG_UNKNOWN_CLIENT = '未知客户端'
     LANG_STATISTICS = '统计'
     LANG_DOWNLOADED = '已下载'
     LANG_UPLOADED = '已上传'
@@ -705,6 +797,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
     LANG_HELP_PRIVATE_CHECK = '启用对私人种子的检查'
+    LANG_HELP_LOG_UNKNOWN = '将未知客户端记入日志'
     __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent。'
 else:
     LANG_INPUT_IPFILTER = 'Please input uTorrent settings folder path or ipfilter file path:\n'
@@ -733,6 +826,7 @@ else:
     LANG_OFFLINE_SERVER = 'offline download server'
     LANG_LEECHER_CLIENT = 'leecher client'
     LANG_LEECHER_SUSPECTED = 'highly suspected of leecher'
+    LANG_UNKNOWN_CLIENT = 'unknown client'
     LANG_STATISTICS = 'Statis'
     LANG_DOWNLOADED = 'D'
     LANG_UPLOADED = 'U'
@@ -761,6 +855,7 @@ else:
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
     LANG_HELP_PRIVATE_CHECK = 'Enable checking for private seeds'
+    LANG_HELP_LOG_UNKNOWN = 'Logging unknown clients'
 
 __doc__ = f'''\
 {__app_name__} {__version__}
@@ -813,6 +908,8 @@ def main() -> None:
                         help=LANG_HELP_NO_SERIOUS_LEECH_CHECK)
     parser.add_argument('-R', '--private-check', action='store_true',
                         help=LANG_HELP_PRIVATE_CHECK)
+    parser.add_argument('-U', '--log-unknown', action='store_true',
+                        help=LANG_HELP_LOG_UNKNOWN)
     parser.add_argument('-h', '--help', action='store_true',
                         help=LANG_HELP_HELP)
     parser.add_argument('-v', '--version', action='store_true',
@@ -845,6 +942,8 @@ def main() -> None:
         kwargs['check_serious_leech'] = False
     if args.private_check:
         kwargs['check_private'] = True
+    if args.log_unknown:
+        kwargs['log_unknown'] = True
     ut = UTorrentWebAPI(args.ipfilter, **kwargs)
     if args.resolve_country:
         ut.set_setting('peer.resolve_country', True)
