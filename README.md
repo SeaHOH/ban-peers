@@ -2,7 +2,7 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via Web API, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
+Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
 Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
 
@@ -63,14 +63,15 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.1.11
+Welcome using Ban-Peers 0.6.0
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
                         [-e HOURS] [-f FORMAT] [-C] [-X] [-P] [-L] [-R] [-U]
-                        [-h] [-v] [IPFILTER-PATH]
+                        [-A] [-h] [-v] [IPFILTER-PATH]
 
-Checking & banning BitTorrent leech peers via Web API, working for uTorrent.
+Checking & banning BitTorrent leech peers via Web API, remove ads, working for
+uTorrent.
 
 Positional Arguments:
         IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty.
@@ -99,13 +100,16 @@ Optional Arguments:
                         Enable checking for private seeds
         -U, --log-unknown
                         Logging unknown clients
+        -A, --remove-ads
+                        Remove ads via set Advanced Settings, only working for localhost
         -h, --help      Show this help message and exit
         -v, --version   Show version and exit
 ```
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.1.11
+Welcome using Ban-Peers 0.6.0
+19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
@@ -115,11 +119,12 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.1.11
+Welcome using Ban-Peers 0.6.0
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
 Please input WebUI password: password  **_No cover_**
+19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed

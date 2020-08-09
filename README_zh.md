@@ -2,7 +2,7 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-这是一个用 Python 写的工具，通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
+这是一个用 Python 写的工具，通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
 
 每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只屏蔽 1 小时。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
 
@@ -61,14 +61,14 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.1.11
+欢迎使用 Ban-Peers 0.6.0
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
-                        [-f 格式] [-C] [-X] [-P] [-L] [-R] [-U] [-h] [-v]
+                        [-f 格式] [-C] [-X] [-P] [-L] [-R] [-U] [-h] [-v] [-A]
                         [IP屏蔽配置路径]
 
-通过网页 API 检查并屏蔽 BitTorrent 吸血对端，工作于 uTorrent。
+通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 
 位置参数:
         IP屏蔽配置路径  ipfilter 目录或文件路径，留空将等待输入。重要提示:
@@ -97,13 +97,16 @@ ban_peers -h
                         启用对私人种子的检查
         -U, --log-unknown
                         将未知客户端记入日志
+        -A, --remove-ads
+                        通过高级设置移除广告，仅工作于本地主机
         -h, --help      显示此帮助信息并退出
         -v, --version   显示版本信息并退出
 ```
 
 ```markdown
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.1.11
+欢迎使用 Ban-Peers 0.6.0
+19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
@@ -113,11 +116,12 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.1.11
+欢迎使用 Ban-Peers 0.6.0
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username
 请输入 WebUI 密码: password  **_没有遮掩_**
+19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
