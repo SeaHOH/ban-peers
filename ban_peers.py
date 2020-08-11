@@ -491,7 +491,7 @@ class UTorrentWebAPI:
                                    input(LANG_INPUT_PASSWORD))
             response = self._opener.open(self._req)
         if response.code == 400 and path != 'token.html':
-            time.sleep(1)  # Waite 1s, or still 400
+            time.sleep(1)  # Waite 1s, or still 401 for pairing
             self.get_token()
         if response.code != 200:
            raise HTTPError(url, response.code, response.msg, response.headers, response)
