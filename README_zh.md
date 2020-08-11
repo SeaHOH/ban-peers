@@ -61,12 +61,12 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.6.0
+欢迎使用 Ban-Peers 0.6.1
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
                         [-f 格式] [-C] [-X] [-P] [-L] [-R] [-U] [-h] [-v] [-A]
-                        [IP屏蔽配置路径]
+                        [-O] [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 
@@ -84,7 +84,7 @@ ban_peers -h
         -e 小时, --expire 小时
                         屏蔽对端的过期时间，默认 12 小时
         -f 格式, --log-header 格式
-                        日志头格式，默认 %H:%M:%S
+                        日志头格式，参见 time.strftime，默认 %H:%M:%S
         -C, --resolve-country
                         启动时，设置 uTorrent 解析对端国家代码
         -X, --no-xunlei-reprieve
@@ -98,15 +98,20 @@ ban_peers -h
         -U, --log-unknown
                         将未知客户端记入日志
         -A, --remove-ads
-                        通过高级设置移除广告，仅工作于本地主机
+                        通过高级设置移除广告，仅工作于本地主机，也无法工作于较
+                        旧版本的 uTorrent
+        -O, --no-close-pairing
+                        移除广告后，不关闭网络配对配置项
         -h, --help      显示此帮助信息并退出
         -v, --version   显示版本信息并退出
 ```
 
 ```markdown
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.6.0
+欢迎使用 Ban-Peers 0.6.1
+19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
+19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
@@ -116,12 +121,14 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.6.0
+欢迎使用 Ban-Peers 0.6.1
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username
 请输入 WebUI 密码: password  **_没有遮掩_**
+19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
+19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
@@ -141,6 +148,8 @@ X:\uTorrent
 
     https://github.com/ShenHongFei/utorrent-block-xunlei  
     https://github.com/iHamsterball/utorrent_block_thunder  
+    https://github.com/isimonov/disable-uTorrent-ads  
+    https://github.com/SchizoDuckie/PimpMyuTorrent  
 
 - qBittorrent
 
@@ -153,6 +162,8 @@ X:\uTorrent
 # 感谢
 [c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
 [ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
+[isimonov](https://github.com/isimonov/disable-uTorrent-ads)  
+[SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
 # License
 Ban-Peers 以 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE) 许可发布。

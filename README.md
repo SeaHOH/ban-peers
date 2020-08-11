@@ -63,12 +63,12 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.6.0
+Welcome using Ban-Peers 0.6.1
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
                         [-e HOURS] [-f FORMAT] [-C] [-X] [-P] [-L] [-R] [-U]
-                        [-A] [-h] [-v] [IPFILTER-PATH]
+                        [-A] [-O] [-h] [-v] [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
@@ -87,7 +87,7 @@ Optional Arguments:
         -e HOURS, --expire HOURS
                         Ban expire time for peers, default 12 HOURS
         -f FORMAT, --log-header FORMAT
-                        Format of log header, default %H:%M:%S
+                        Format of log header, see time.strftime, default %H:%M:%S
         -C, --resolve-country
                         Set uTorrent to resolved peer's country code at start-up
         -X, --no-xunlei-reprieve
@@ -101,15 +101,20 @@ Optional Arguments:
         -U, --log-unknown
                         Logging unknown clients
         -A, --remove-ads
-                        Remove ads via set Advanced Settings, only working for localhost
+                        Remove ads via set Advanced Settings, only working for
+                        localhost, and to fail in older uTorrent
+        -O, --no-close-pairing
+                        Don't turn off Web Pairing setting after remove ads
         -h, --help      Show this help message and exit
         -v, --version   Show version and exit
 ```
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.6.0
-19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_Remove upsell tip in the sidebar_**
+Welcome using Ban-Peers 0.6.1
+19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
+19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
+19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
@@ -119,12 +124,14 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.6.0
+Welcome using Ban-Peers 0.6.1
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
 Please input WebUI password: password  **_No cover_**
-19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_Remove upsell tip in the sidebar_**
+19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
+19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
+19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
@@ -144,6 +151,8 @@ Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post th
 
     https://github.com/ShenHongFei/utorrent-block-xunlei  
     https://github.com/iHamsterball/utorrent_block_thunder  
+    https://github.com/isimonov/disable-uTorrent-ads  
+    https://github.com/SchizoDuckie/PimpMyuTorrent  
 
 - qBittorrent
 
@@ -156,6 +165,8 @@ Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post th
 # Thanks
 [c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
 [ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
+[isimonov](https://github.com/isimonov/disable-uTorrent-ads)  
+[SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
 # License
 Ban-Peers is released under the [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).

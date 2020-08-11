@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -32,9 +32,6 @@ from shutil import get_terminal_size
 
 from typing import *
 from http.client import HTTPResponse
-
-ParamValue = Union[int, str]
-Params = TypeVar('Params', Mapping[str, ParamValue], Iterable[Tuple[str, ParamValue]])
 
 
 if sys.version_info < (3, 7):
@@ -282,80 +279,83 @@ def limit_dict_lenght(dict:Dict, lenght:int) -> None:
 class List2Attr:
     # https://github.com/bittorrent/webui/blob/master/constants.js
 
-    class TORRENT:
-        HASH = 0
-        STATUS = 1
-        NAME = 2
-        SIZE = 3
-        PROGRESS = 4
-        DOWNLOADED = 5
-        UPLOADED = 6
-        RATIO = 7
-        UPSPEED = 8
-        DOWNSPEED = 9
-        ETA = 10
-        LABEL = 11
-        PEERS_CONNECTED = 12
-        PEERS_SWARM = 13
-        SEEDS_CONNECTED = 14
-        SEEDS_SWARM = 15
-        AVAILABILITY = 16
-        QUEUE_POSITION = 17
-        REMAINING = 18
-        DOWNLOAD_URL = 19
-        RSS_FEED_URL = 20
-        STATUS_MESSAGE = 21
-        STREAM_ID = 22
-        DATE_ADDED = 23
-        DATE_COMPLETED = 24
-        APP_UPDATE_URL = 25
-        SAVE_PATH = 26
-
-    class FILE:
-        NAME = 0
-        SIZE = 1
-        DOWNLOADED = 2
-        PRIORITY = 3
-        FIRST_PIECE = 4
-        NUM_PIECES = 5
-        STREAMABLE = 6
-        ENCODED_RATE = 7
-        DURATION = 8
-        WIDTH = 9
-        HEIGHT = 10
-        STREAM_ETA = 11
-        STREAMABILITY = 12
-
-    class PEER:
-        COUNTRY = 0
-        IP = 1
-        REVDNS = 2
-        UTP = 3
-        PORT = 4
-        CLIENT = 5
-        FLAGS = 6
-        PROGRESS = 7
-        DOWNSPEED = 8
-        UPSPEED = 9
-        REQS_OUT = 10
-        REQS_IN = 11
-        WAITED = 12
-        UPLOADED = 13
-        DOWNLOADED = 14
-        HASHERR = 15
-        PEERDL = 16
-        MAXUP = 17
-        MAXDOWN = 18
-        QUEUED = 19
-        INACTIVE = 20
-        RELEVANCE = 21
+    _TYPES = {
+        'TORRENT': {
+            'HASH': 0,
+            'STATUS': 1,
+            'NAME': 2,
+            'SIZE': 3,
+            'PROGRESS': 4,
+            'DOWNLOADED': 5,
+            'UPLOADED': 6,
+            'RATIO': 7,
+            'UPSPEED': 8,
+            'DOWNSPEED': 9,
+            'ETA': 10,
+            'LABEL': 11,
+            'PEERS_CONNECTED': 12,
+            'PEERS_SWARM': 13,
+            'SEEDS_CONNECTED': 14,
+            'SEEDS_SWARM': 15,
+            'AVAILABILITY': 16,
+            'QUEUE_POSITION': 17,
+            'REMAINING': 18,
+            'DOWNLOAD_URL': 19,
+            'RSS_FEED_URL': 20,
+            'STATUS_MESSAGE': 21,
+            'STREAM_ID': 22,
+            'DATE_ADDED': 23,
+            'DATE_COMPLETED': 24,
+            'APP_UPDATE_URL': 25,
+            'SAVE_PATH': 26
+        },
+        'FILE': {
+            'NAME': 0,
+            'SIZE': 1,
+            'DOWNLOADED': 2,
+            'PRIORITY': 3,
+            'FIRST_PIECE': 4,
+            'NUM_PIECES': 5,
+            'STREAMABLE': 6,
+            'ENCODED_RATE': 7,
+            'DURATION': 8,
+            'WIDTH': 9,
+            'HEIGHT': 10,
+            'STREAM_ETA': 11,
+            'STREAMABILITY': 12
+        },
+        'PEER': {
+            'COUNTRY': 0,
+            'IP': 1,
+            'REVDNS': 2,
+            'UTP': 3,
+            'PORT': 4,
+            'CLIENT': 5,
+            'FLAGS': 6,
+            'PROGRESS': 7,
+            'DOWNSPEED': 8,
+            'UPSPEED': 9,
+            'REQS_OUT': 10,
+            'REQS_IN': 11,
+            'WAITED': 12,
+            'UPLOADED': 13,
+            'DOWNLOADED': 14,
+            'HASHERR': 15,
+            'PEERDL': 16,
+            'MAXUP': 17,
+            'MAXDOWN': 18,
+            'QUEUED': 19,
+            'INACTIVE': 20,
+            'RELEVANCE': 21
+        }
+    }
 
     def __init__(self, list:List[Union[int, str]], type:str) -> None:
         object.__setattr__(self, '_list', list)
-        object.__setattr__(self, '_type', self.__class__.__dict__[type.upper()])
+        object.__setattr__(self, '_type', self._TYPES[type.upper()])
 
     def __getattr__(self, name:str) -> Union[int, float, str]:
-        value = self._list[self._type.__dict__[name.upper()]]
+        value = self._list[self._type[name.upper()]]
         if name == 'ip' and ':' in value:
             return f'[{value}]'
         elif name == 'client' and value[:1] == '-':
@@ -369,7 +369,7 @@ class List2Attr:
             value = value[1:-1]
         elif name == 'availability':
             value = int(value * 65536)
-        self._list[self._type.__dict__[name.upper()]] = value
+        self._list[self._type[name.upper()]] = value
 
 
 class UTorrentWebAPI:
@@ -470,7 +470,8 @@ class UTorrentWebAPI:
                                 ).decode('ascii'))
 
 
-    def request(self, path:str='', params:Params=None) -> Union[HTTPResponse, NoReturn]:
+    def request(self, path:str='', params:Optional[Mapping[str, Union[int, str]]]=None
+                ) -> Union[HTTPResponse, NoReturn]:
         if params:
             params_str = urlencode({
                 'token': self._token,
@@ -490,6 +491,7 @@ class UTorrentWebAPI:
                                    input(LANG_INPUT_PASSWORD))
             response = self._opener.open(self._req)
         if response.code == 400 and path != 'token.html':
+            time.sleep(1)  # Waite 1s, or still 400
             self.get_token()
         if response.code != 200:
            raise HTTPError(url, response.code, response.msg, response.headers, response)
@@ -540,13 +542,13 @@ class UTorrentWebAPI:
         }))
         return (List2Attr(peer, 'peer') for peer in result['peers'][1])
 
-    def set_setting(self, s:str, v:Union[int, str, bool]) -> None:
+    def set_setting(self, s:str, v:Union[int, str, bool], log:bool=True) -> None:
         self.request(params={
             'action': 'setsetting',
             's': s,
             'v': v
         })
-        if s not in ('ipfilter.enable', 'webui.allow_pairing'):
+        if log:
             print(f'{self.log_header}{LANG_SET_SETTING} {s!r} {LANG_TO} {v}')
 
     def ban_peers(self) -> None:
@@ -565,7 +567,7 @@ class UTorrentWebAPI:
             del self.ipfilter[ip]
         self.save_ipfilter()
         self._need_save = False
-        self.set_setting('ipfilter.enable', True)
+        self.set_setting('ipfilter.enable', True, False)
 
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
@@ -715,7 +717,7 @@ class UTorrentWebAPI:
                     if not seeding:
                         self._statistics_progress.pop(ip_port, None)
                     try:
-                        self.ban_push(torrent.hash, peer, ' '.join(reasons))
+                        self.ban_push(hash, peer, ' '.join(reasons))
                     finally:
                         reasons.clear()
 
@@ -740,13 +742,14 @@ class UTorrentWebAPI:
     def log_header(self) -> str:
         return f'{CLL}{time.strftime(self.log_header_fmt, time.localtime())} '
 
-    def run(self, show_operations:bool=True) -> None:
+    def run(self, pair=None, show_operations:bool=True) -> None:
         def log(msg):
             print(f'{self.log_header}uTorrent {LANG_A_NAME}{msg}{LANG_RUNNING}')
 
         if self.running:
             return
         self.running = True
+        disconnected = False
         pause = False
         ss = False
         self.set_setting('bt.use_rangeblock', False)
@@ -754,30 +757,43 @@ class UTorrentWebAPI:
         while True:
             if not self.running:
                 break
+            err_cr = None
             if not pause:
-                err_cr = None
                 try:
                     self.check_peers()
                     self.ban_peers()
                 except URLError as e:
                     if isinstance(e.reason, ConnectionRefusedError):
+                        if not disconnected:
+                            print(f'{self.log_header}uTorrent {LANG_DISCONNECTED}')
+                            # Don't clear `self._statistics`
+                            self._statistics_progress.clear()
+                            self._statistics_uploaded.clear()
                         print(f'{self.log_header}{LANG_CONNECTION_REFUSED} '
                               f'WebUI@{self._url_root}', end='\r')
+                        disconnected = err_cr = True
                         time.sleep(10)
-                        err_cr = True
-                    else:
+                    elif not disconnected:
                         logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {e}')
                 except HTTPError as e:
                     print(f'{self.log_header}{LANG_ERROR_OCCURRED}: '
                           f'{e}, {e.filename}')
                 except Exception as e:
                     logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {e}')
+                if disconnected and err_cr is None:
+                    # Reconnected
+                    print(f'{self.log_header}uTorrent {LANG_RECONNECTED}')
+                    if isinstance(pair, UTorrentPairing):
+                        with pair:
+                            # Remove upsell tip in the sidebar
+                            pair.set_setting('gui.show_plus_upsell_nodes', False)
+                    disconnected = False
             for _ in range(5):
                 if show_operations:
                     print(CLL, end='')
                     msgs = ss and self.statistics or LANG_OPERATES_TIP,
                     if err_cr:
-                        msgs = LANG_DISCONNECTED, *msgs
+                        msgs = LANG_DISCONNECTED.upper(), *msgs
                     print(*msgs, end='\r')
                     ss = not ss
                     k = get_keyhit()
@@ -808,20 +824,16 @@ class UTorrentWebAPI:
 
 
 class UTorrentPairing:
-    def __init__(self, utweb:UTorrentWebAPI) -> None:
+    def __init__(self, utweb:UTorrentWebAPI, close_pairing:bool=False) -> None:
         self._utweb = utweb
-        self._utweb.set_setting('webui.allow_pairing', True)
-        try:
-            self.get_pairing()
-        except:
-            self._utweb.set_setting('webui.allow_pairing', False)
-            raise
+        self._close_pairing = close_pairing
         self._url_root = utweb._url_root.replace('gui', 'btapp')
         self._req = Request(self._url_root)
         self._opener = utweb._opener
+        self._pairing = None
         self._session = None
 
-    def request(self, params:Params) -> Union[HTTPResponse, NoReturn]:
+    def request(self, params:Mapping[str, Union[int, str]]) -> Union[HTTPResponse, NoReturn]:
         params_str = urlencode({
             'pairing': self._pairing,
             **params
@@ -839,12 +851,23 @@ class UTorrentPairing:
            raise HTTPError(url, response.code, response.msg, response.headers, response)
         return response
 
-    def get_pairing(self) -> None:
-        self._pairing = self._utweb.request('pair/',
-                            {'name': f'{__app_name__} {__version__}'}
-                            ).read().decode('ascii')
+    def get_pairing(self) -> Optional[NoReturn]:
+        self._utweb.set_setting('webui.allow_pairing', True)
+        try:
+            self._pairing = self._utweb.request('pair/',
+                                {'name': f'{__app_name__} {__version__}'}
+                                ).read().decode('ascii')
+        except Exception as e:
+            if isinstance(e, HTTPError) and e.code == 401:
+                print(f'{self.log_header}{LANG_PAIRING_REJECTED}')
+            if self._close_pairing:
+                self._utweb.set_setting('webui.allow_pairing', False)
+            self._pairing = None
+            raise
 
     def get_session(self) -> None:
+        if self._pairing is None:
+            self.get_pairing()
         result = json.load(self.request({
             'type': 'state',
             'queries': '[[btapp]]'
@@ -868,7 +891,7 @@ class UTorrentPairing:
             elif error == 'session has expired':
                 self.get_session()
             else:
-                print(f'{self.log_header}set_setting({s!r}, {v}) fail, error: {error}')
+                print(f'{self.log_header}set_setting({s!r}, {v}) {LANG_FAIL}: {error}')
                 return
         print(f'{self.log_header}{LANG_SET_SETTING} {s!r} {LANG_TO} {v}')
 
@@ -879,8 +902,14 @@ class UTorrentPairing:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback) -> None:
-        self._utweb.set_setting('webui.allow_pairing', False)
+    def __exit__(self, etype, value, tb) -> Literal[True]:
+        if self._pairing and self._close_pairing:
+            self._utweb.set_setting('webui.allow_pairing', False)
+        self._pairing = None
+        self._session = None
+        if value and not (etype is HTTPError and value.code == 401):
+            logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {value}')
+        return True  # Make no Exception raised
 
 
 CLL = f'\r{" " * _max_columns}\r'
@@ -899,9 +928,11 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_A_NAME = '自动屏蔽脚本'
     LANG_SET_SETTING = '设定 uTorrent 配置'
     LANG_TO = '到'
+    LANG_FAIL = '失败'
     LANG_ERROR_OCCURRED = '发生错误'
     LANG_CONNECTION_REFUSED = '无法连接'
-    LANG_DISCONNECTED = '已断开'
+    LANG_RECONNECTED = '已重新连接'
+    LANG_DISCONNECTED = '已断开连接'
     LANG_BANNED = '已屏蔽'
     LANG_FOUND = '发现'
     LANG_FACK_PROGRESS = '汇报虚假进度'
@@ -935,14 +966,16 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_EXPIRE_META = '小时'
     LANG_HELP_EXPIRE = '屏蔽对端的过期时间，默认'
     LANG_HELP_HEADER_META = '格式'
-    LANG_HELP_HEADER = '日志头格式，默认'
+    LANG_HELP_HEADER = '日志头格式，参见 time.strftime，默认'
     LANG_HELP_RESOLVE_COUNTRY = '启动时，设置 uTorrent 解析对端国家代码'
     LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
     LANG_HELP_PRIVATE_CHECK = '启用对私人种子的检查'
     LANG_HELP_LOG_UNKNOWN = '将未知客户端记入日志'
-    LANG_HELP_REMOVE_ADS = '通过高级设置移除广告，仅工作于本地主机'
+    LANG_HELP_REMOVE_ADS = ('通过高级设置移除广告，仅工作于本地主机，'
+                            '也无法工作于较旧版本的 uTorrent')
+    LANG_HELP_NO_CLOSE_PAIRING = '移除广告后，不关闭网络配对配置项'
     __doc__ = '通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。'
 else:
     LANG_INPUT_IPFILTER = 'Please input uTorrent settings folder path or ipfilter file path:\n'
@@ -959,9 +992,11 @@ else:
     LANG_A_NAME = 'auto-banning script '
     LANG_SET_SETTING = 'Set uTorrent setting'
     LANG_TO = 'to'
+    LANG_FAIL = 'fail'
     LANG_ERROR_OCCURRED = 'error occurred'
     LANG_CONNECTION_REFUSED = 'unable to connect'
-    LANG_DISCONNECTED = 'DISCONNECTED'
+    LANG_RECONNECTED = 'reconnected'
+    LANG_DISCONNECTED = 'disconnected'
     LANG_BANNED = 'banned'
     LANG_FOUND = ' found '
     LANG_FACK_PROGRESS = 'report fack progress'
@@ -995,14 +1030,17 @@ else:
     LANG_HELP_EXPIRE_META = 'HOURS'
     LANG_HELP_EXPIRE = 'Ban expire time for peers, default'
     LANG_HELP_HEADER_META = 'FORMAT'
-    LANG_HELP_HEADER = 'Format of log header, default'
+    LANG_HELP_HEADER = 'Format of log header, see time.strftime, default'
     LANG_HELP_RESOLVE_COUNTRY = 'Set uTorrent to resolved peer\'s country code at start-up'
     LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
     LANG_HELP_PRIVATE_CHECK = 'Enable checking for private seeds'
     LANG_HELP_LOG_UNKNOWN = 'Logging unknown clients'
-    LANG_HELP_REMOVE_ADS = 'Remove ads via set Advanced Settings, only working for localhost'
+    LANG_HELP_REMOVE_ADS = ('Remove ads via set Advanced Settings, '
+                            'only working for localhost, '
+                            'and to fail in older uTorrent')
+    LANG_HELP_NO_CLOSE_PAIRING = 'Don\'t turn off Web Pairing setting after remove ads'
 
 __doc__ = f'''\
 {__app_name__} {__version__}
@@ -1059,6 +1097,8 @@ def main() -> None:
                         help=LANG_HELP_LOG_UNKNOWN)
     parser.add_argument('-A', '--remove-ads', action='store_true',
                         help=LANG_HELP_REMOVE_ADS)
+    parser.add_argument('-O', '--no-close-pairing', action='store_true',
+                        help=LANG_HELP_NO_CLOSE_PAIRING)
     parser.add_argument('-h', '--help', action='store_true',
                         help=LANG_HELP_HELP)
     parser.add_argument('-v', '--version', action='store_true',
@@ -1095,26 +1135,22 @@ def main() -> None:
         kwargs['log_unknown'] = True
 
     ut = UTorrentWebAPI(args.ipfilter, **kwargs)
+    utp = None
     if all(ipaddr[4][0] in ('127.0.0.1', '::1')
             for ipaddr in getaddrinfo(kwargs['host'], None)):
-        try:
-            with UTorrentPairing(ut) as utp:
-                if args.remove_ads:
-                    for kv in ANTI_ADS_SETTINGS:
-                        utp.set_setting(*kv)
-                else:
-                    # Remove upsell tip in the sidebar, for free release versions,
-                    # uTorrent reset this setting to True every start-up
-                    utp.set_setting('gui.show_plus_upsell_nodes', False)
-        except HTTPError as e:
-            if e.code == 401:
-                print(LANG_PAIRING_REJECTED)
-        except:
-            pass
+        utp = UTorrentPairing(ut, not args.no_close_pairing)
+        with utp:
+            if args.remove_ads:
+                for kv in ANTI_ADS_SETTINGS:
+                    utp.set_setting(*kv)
+            else:
+                # Remove upsell tip in the sidebar, for free release versions,
+                # uTorrent reset this setting to True every start-up
+                utp.set_setting('gui.show_plus_upsell_nodes', False)
     if args.resolve_country:
         ut.set_setting('peer.resolve_country', True)
         ut.set_setting('resolve_peerips', True)
-    ut.run()
+    ut.run(utp)
 
 
 if __name__ == '__main__':
