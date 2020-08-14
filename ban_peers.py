@@ -56,7 +56,10 @@ LEECHER_XUNLEI = re.compile('''
 ^(?:
     7\.|sd|xl|xun|
     unknown\s(?:
-        bt/7\.(?!(?:9|10)\.\d\D)|
+        bt/7\.(?!
+            (?:9|10)\.\d\D  | # BitTorrent
+            0\.0\.0$          # BitTorrent?
+        )|
         sd|xl
     )
 )
@@ -132,7 +135,10 @@ CLIENT_UNKNOWN = re.compile('''
     BS                | # BTSlave [Dead]
     Bt                | # Bt [library]
     #BT               | # BBtor [Dead]
-    BT/7\.(?:9|10)\.\d\D| # mainline BitTorrent [versions >= 7.9]
+    BT/7\.(?:           # mainline BitTorrent [versions >= 7.9]
+        (?:9|10)\.\d\D| # So foolish that could not be identified
+        0\.0\.0$        #
+    )                 | #
     BW                | # BitWombat [Dead]
     DP                | # Propagate Data Client [Dead]
     FC                | # FileCroc [Dead]
@@ -174,8 +180,9 @@ CLIENT_UNKNOWN = re.compile('''
 
 
 ANTI_ADS_SETTINGS = [(k, True) for k in (
-    #'gui.pro_installed',  # If want using the pro style sidebar,
-                           # uncomment this setting and restart uTorrent
+    #'gui.pro_installed',  # If want using the pro style sidebar, uncomment this
+                           # setting and run this script with `--remove-ads`,
+                           # restart uTorrent at last
     'gui.playback_tab_hidden_by_user',
     'offers.ads_forgetme_on',
 )] + [(k, False) for k in (
@@ -552,9 +559,6 @@ class UTorrentWebAPI:
             print(f'{self.log_header}{LANG_SET_SETTING} {s!r} {LANG_TO} {v}')
 
     def ban_peers(self) -> None:
-        if not self._need_save:
-            return
-        self.collect_statistics()
         ct = int(time.time())
         expire = ct - self.expire
         expire_interim = ct - 3600
@@ -563,11 +567,14 @@ class UTorrentWebAPI:
             if timestamp < expire or timestamp < expire_interim and \
                 reason.startswith((b'Seeding', b'Suspected'))
         )
-        for ip in expire_ips:
-            del self.ipfilter[ip]
-        self.save_ipfilter()
-        self._need_save = False
-        self.set_setting('ipfilter.enable', True, False)
+        if self._need_save or expire_ips:
+            for ip in expire_ips:
+                del self.ipfilter[ip]
+            self.save_ipfilter()
+            self.set_setting('ipfilter.enable', True, False)
+        if self._need_save:
+            self.collect_statistics()
+            self._need_save = False
 
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
@@ -660,6 +667,9 @@ class UTorrentWebAPI:
                     elif peer.downloaded == peer.relevance == 0:
                         reasons.append('Player')
                 elif peer.client.startswith('[FAKE]'):
+                    # uTorrent identification
+                    # It mistook uTorrent Android versions, so foolish
+                    # I would never to feedback this issue to official
                     log(LANG_FACK_CLIENT)
                     if seeding:
                         reasons.append('Seeding')
@@ -773,11 +783,9 @@ class UTorrentWebAPI:
                               f'WebUI@{self._url_root}', end='\r')
                         disconnected = err_cr = True
                         time.sleep(10)
-                    elif not disconnected:
-                        logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {e}')
-                except HTTPError as e:
-                    print(f'{self.log_header}{LANG_ERROR_OCCURRED}: '
-                          f'{e}, {e.filename}')
+                    elif not (disconnected and isinstance(e, HTTPError)):
+                        print(f'{self.log_header}{LANG_ERROR_OCCURRED}: '
+                              f'{e}, {e.filename}')
                 except Exception as e:
                     logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {e}')
                 if disconnected and err_cr is None:
