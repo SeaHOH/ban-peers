@@ -9,14 +9,17 @@ __version__ = '0.6.1'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
-__py_min__ = '3.6'
+__py_min__ = '3.7'
 __py_max__ = '3.9'
 __webpage__ = 'https://github.com/SeaHOH/ban-peers'
 
 
-import re
-import os
 import sys
+if sys.version_info < (3, 7):
+    raise RuntimeError('Please run with Python3.7 and above!')
+
+import os
+import re
 import json
 import time
 import locale
@@ -34,10 +37,6 @@ from typing import *
 from http.client import HTTPResponse
 
 
-if sys.version_info < (3, 7):
-    _default_dict = collections.OrderedDict
-else:
-    _default_dict = dict
 _linesep = os.linesep.replace('\r\n', '\n').encode()
 _default_columns = 80
 _max_columns = get_terminal_size().columns
@@ -83,13 +82,14 @@ LEECHER_PLAYER = re.compile('''
     )
 )
 ''', re.X)
-# Offline Download Servers (does not used at present)
-# Leech? I don't know.
+# Offline Download Servers/Seedboxes (does not used at present)
+# Leech? Seems usually does not, depending on the settings thereof?
 # bitport.io [Unknown ID/UA]
 # justseed.it [Unknown UA] JS [Dead]
 # put.io [Unknown ID/UA]
 # seedbox.io libTorrent 0.13.6 RevDNS - hosted.by.seedbox.io
 # seedboxws.com [Unknown ID/UA]
+# seedhost.eu libTorrent 0.13.6 RevDNS - *.seedhost.eu
 # seedr.cc [Unknown ID/UA]
 # yourseedbox.com [Unknown ID/UA]
 #LEECHER_OFFLINE = re.compile('''
@@ -380,9 +380,6 @@ class List2Attr:
 
 
 class UTorrentWebAPI:
-
-    dict: ClassVar[Type[Dict]] = _default_dict
-
     def __init__(self,
                 ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
                 username:Optional[str]='', password:Optional[str]='',
@@ -422,8 +419,8 @@ class UTorrentWebAPI:
         self.get_token()
 
     def init_ipfilter(self) -> None:
-        self.log_ip = self.dict()
-        self.ipfilter = ipfilter = self.dict()
+        self.log_ip = {}
+        self.ipfilter = ipfilter = {}
         ipfilter_range = []
         ct = int(time.time())
         ct_bytes = str(ct).encode()
@@ -449,7 +446,7 @@ class UTorrentWebAPI:
         buffering = sum((
             sum((len(ip), len(reason), len(timestamp), 8))
             for ip, reason, timestamp, _ in self.ipfilter.values()
-        ), len(self.ipfilter_range) + 1)
+        ), len(self.ipfilter_range) + 2)  # at least 2, 1 is line buffering
         with open(self.file_ipfilter, 'wb', buffering=buffering) as f:
             f.write(self.ipfilter_range)
             for ip, reason, timestamp, _ in self.ipfilter.values():
@@ -641,6 +638,7 @@ class UTorrentWebAPI:
                         peer.country == 'CN' and \
                         'Transmission' in peer.client and \
                         peer.downloaded == peer.relevance == 0:
+                    # Chinese Offline Download Servers, almost are leech clients
                     log(LANG_OFFLINE_SERVER)
                     if reasons and reasons[0] == 'Seeding':
                         del reasons[0]
@@ -711,7 +709,7 @@ class UTorrentWebAPI:
                         peer.uploaded -= _uploaded
                     if ('U' in peer.flags and 'd' in peer.flags or
                             peer.downspeed < 1024 and peer.waited > 60) and \
-                            peer.uploaded > min(size_tenth, _100m) and \
+                            peer.uploaded > min(max(size_tenth, _10m), _100m) and \
                             peer.downloaded * 10 < peer.uploaded and \
                             peer.downloaded * 10 / size_millesimal < peer.relevance:
                         log(LANG_LEECHER_SUSPECTED)

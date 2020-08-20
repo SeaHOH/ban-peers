@@ -28,7 +28,7 @@ Or download and Install from source code
     python setup.py install
 
 # Compatibility
-- Python >= 3.6
+- Python >= 3.7
 
 # Usage
 First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for specified ipfilter.dat file.

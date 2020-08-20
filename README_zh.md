@@ -28,7 +28,7 @@
     python setup.py install
 
 # 兼容性
-- Python >= 3.6
+- Python >= 3.7
 
 # 使用
 首先，必须在 μTorrent 设置中启用网页界面；然后运行 Ban-Peers 于指定的 ipfilter.dat 文件。
@@ -65,8 +65,8 @@ ban_peers -h
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
-                        [-f 格式] [-C] [-X] [-P] [-L] [-R] [-U] [-h] [-v] [-A]
-                        [-O] [IP屏蔽配置路径]
+                        [-f 格式] [-C] [-X] [-P] [-L] [-R] [-U] [-A] [-O] [-h]
+                        [-v] [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 

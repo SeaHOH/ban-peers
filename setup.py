@@ -47,6 +47,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Utilities"
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     entry_points={"console_scripts": ["ban_peers=ban_peers:main"]},
 )
