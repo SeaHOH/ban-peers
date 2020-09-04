@@ -45,8 +45,9 @@ if _max_columns < _default_columns and (
         os.name != 'nt' and os.system(f'stty columns {_default_columns}') == 0):
     _max_columns = _default_columns
 _max_columns -= 1
-_10m = 1024 * 1024 * 10
-_100m = _10m * 10
+_1m = 1024 * 1024
+_10m = _1m * 10
+_100m = _1m * 100
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 # The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
@@ -87,7 +88,7 @@ LEECHER_PLAYER = re.compile('''
 # bitport.io [Unknown ID/UA]
 # justseed.it [Unknown UA] JS [Dead]
 # put.io [Unknown ID/UA]
-# seedbox.io libTorrent 0.13.6 RevDNS - hosted.by.seedbox.io
+# seedbox.io libTorrent 0.13.6 RevDNS - *.seedbox.io
 # seedboxws.com [Unknown ID/UA]
 # seedhost.eu libTorrent 0.13.6 RevDNS - *.seedhost.eu
 # seedr.cc [Unknown ID/UA]
@@ -362,21 +363,23 @@ class List2Attr:
         object.__setattr__(self, '_type', self._TYPES[type.upper()])
 
     def __getattr__(self, name:str) -> Union[int, float, str]:
-        value = self._list[self._type[name.upper()]]
-        if name == 'ip' and ':' in value:
+        name = name.upper()
+        value = self._list[self._type[name]]
+        if name == 'IP' and ':' in value:
             return f'[{value}]'
-        elif name == 'client' and value[:1] == '-':
+        elif name == 'CLIENT' and value[:1] == '-':
             return value.split('-')[1]
-        elif name == 'availability':
+        elif name == 'AVAILABILITY':
             return value / 65536
         return value
 
     def __setattr__(self, name:str, value:Union[int, str]) -> None:
-        if name == 'ip' and value[:1] == '[':
+        name = name.upper()
+        if name == 'IP' and value[:1] == '[':
             value = value[1:-1]
-        elif name == 'availability':
+        elif name == 'AVAILABILITY':
             value = int(value * 65536)
-        self._list[self._type[name.upper()]] = value
+        self._list[self._type[name]] = value
 
 
 class UTorrentWebAPI:
@@ -761,6 +764,7 @@ class UTorrentWebAPI:
         pause = False
         ss = False
         self.set_setting('bt.use_rangeblock', False)
+        self.set_setting('ipfilter.enable', True)
         log(LANG_START)
         while True:
             if not self.running:
@@ -833,7 +837,7 @@ class UTorrentPairing:
     def __init__(self, utweb:UTorrentWebAPI, close_pairing:bool=False) -> None:
         self._utweb = utweb
         self._close_pairing = close_pairing
-        self._url_root = utweb._url_root.replace('gui', 'btapp')
+        self._url_root = utweb._url_root.replace('/gui/', '/btapp/')
         self._req = Request(self._url_root)
         self._opener = utweb._opener
         self._pairing = None
