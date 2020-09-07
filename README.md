@@ -63,7 +63,7 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.6.1
+Welcome using Ban-Peers 0.6.2
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
@@ -111,11 +111,12 @@ Optional Arguments:
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.6.1
+Welcome using Ban-Peers 0.6.2
 19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
 19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
+19:44:35 Set uTorrent setting 'ipfilter.enable' to True
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```
@@ -124,7 +125,7 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.6.1
+Welcome using Ban-Peers 0.6.2
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
@@ -133,6 +134,7 @@ Please input WebUI password: password  **_No cover_**
 19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
+19:44:35 Set uTorrent setting 'ipfilter.enable' to True
 19:44:35 uTorrent auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 ```

@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -411,18 +411,18 @@ class UTorrentWebAPI:
         self.log_header_fmt = log_header_fmt
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
         self._seeds_private = {}
-        self._statistics = collections.defaultdict(dict)
+        self._statistics = {}
         self._statistics_progress = collections.defaultdict(dict)
         self._statistics_uploaded = collections.defaultdict(dict)
         self._statistics_str = ''
         self._need_save = False
         self.running = False
+        self.log_ip = {}
         self.init_ipfilter()
         self.init_opener()
         self.get_token()
 
     def init_ipfilter(self) -> None:
-        self.log_ip = {}
         self.ipfilter = ipfilter = {}
         ipfilter_range = []
         ct = int(time.time())
@@ -528,6 +528,7 @@ class UTorrentWebAPI:
             self._params_list['cid'] = torrents['torrentc']
         for hash in torrents.get('torrentm', []):
             self._seeds_private.pop(hash, None)
+            self._statistics_progress.pop(hash, None)
             self._statistics_uploaded.pop(hash, None)
         for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
             torrent = List2Attr(torrent, 'torrent')
@@ -579,7 +580,12 @@ class UTorrentWebAPI:
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
         ip = peer.ip
-        self._statistics[ip][hash] = peer.downloaded, peer.uploaded
+        try:
+            d = self._statistics.pop(ip)
+        except KeyError:
+            d = {}
+        d[hash] = peer.downloaded, peer.uploaded
+        self._statistics[ip] = d
         limit_dict_lenght(self._statistics, 1024)
         reason = f'{reason} [{peer.client}]'
         self.log_ip.pop(ip, None)
@@ -594,10 +600,11 @@ class UTorrentWebAPI:
     def check_peers(self) -> None:
         def log(msg):
             ip = peer.ip
-            if ip in self.log_ip or ip in self.ipfilter:
-                return
-            print(f'{self.log_header}[{hash}][{torrent.name}]'
-                  f'{LANG_FOUND}{msg}: {peer.client}@{ip_port}')
+            try:
+                self.log_ip.pop(ip)
+            except KeyError:
+                print(f'{self.log_header}[{hash}][{torrent.name}]'
+                      f'{LANG_FOUND}{msg}: {peer.client}@{ip_port}')
             self.log_ip[ip] = True
             limit_dict_lenght(self.log_ip, 32)
 
@@ -608,42 +615,58 @@ class UTorrentWebAPI:
             hash = torrent.hash
             if self.check_serious_leech:
                 files = list(self.get_files(hash))
-                size_tenth = int(sum(file.size for file in files
+                size_todl_tenth = int(sum(file.size for file in files
                                      if file.priority) / 10)
                 size_last_downloaded = torrent.downloaded - sum(
-                                       file.downloaded
-                                       for file in files)
+                                       file.downloaded for file in files)
             for peer in self.get_peers(hash):
+                if peer.ip in self.ipfilter:
+                    continue
                 ip_port = f'{peer.ip}:{peer.port}'
-                if not self.check_fake_progress:
+                if peer.progress >= 1000:
+                    if 'u' in peer.flags.lower():
+                        # This is not a check, should not be skipped
+                        reasons.append('Progress')
+                elif not self.check_fake_progress:
                     pass
-                elif peer.progress:
-                    self._statistics_progress.pop(ip_port, None)
-                elif (seeding or peer.downloaded == 0):
-                    ct = time.monotonic()
+                elif peer.uploaded > torrent.size:
+                    reasons.append('Suspected')
+                    reasons.append('Progress')
+                elif seeding or peer.downloaded == 0:
                     try:
-                        last_uploaded, t = self._statistics_progress[ip_port][hash]
+                        last_progress, last_uploaded, t = \
+                                self._statistics_progress[hash][ip_port]
+                        fo = None
                     except KeyError:
-                        self._statistics_progress[ip_port][hash] = \
-                                last_uploaded, t = peer.uploaded, None
-                    if peer.inactive > 10:
-                        self._statistics_progress[ip_port][hash] = last_uploaded, None
-                    elif peer.uploaded - last_uploaded > size_millesimal * 1.5:
+                        fo = True
+                    if fo or peer.progress < last_progress:
+                        last_progress = peer.progress
+                        last_uploaded = peer.uploaded
+                        t = None
+                    elif peer.inactive < 10 and \
+                            (peer.uploaded - last_uploaded) > \
+                            (peer.progress - last_progress + 1) * size_millesimal:
+                        ct = time.monotonic()
                         if t is None:
-                            self._statistics_progress[ip_port][hash] = last_uploaded, ct
-                        elif ct - t > 60:  # did not recovered within one minute
-                            log(LANG_FACK_PROGRESS)
+                            t = ct
+                        elif ct - t > 60:  # Did not recovered within one minute
                             if seeding:
                                 reasons.append('Seeding')
                             reasons.append('Progress')
-                limit_dict_lenght(self._statistics_progress, 1024)
+                            t = None
+                    else:
+                        t = None
+                    self._statistics_progress[hash][ip_port] = \
+                            last_progress, last_uploaded, t
+                if reasons:
+                    log(f'{LANG_FACK_PROGRESS} [{peer.progress/10}%]')
                 if peer.port >= 65000 and \
                         peer.country == 'CN' and \
                         'Transmission' in peer.client and \
                         peer.downloaded == peer.relevance == 0:
                     # Chinese Offline Download Servers, almost are leech clients
                     log(LANG_OFFLINE_SERVER)
-                    if reasons and reasons[0] == 'Seeding':
+                    if reasons and reasons[0] != 'Progress':
                         del reasons[0]
                     reasons.append('Offline')
                 elif LEECHER_XUNLEI.search(peer.client):
@@ -654,7 +677,7 @@ class UTorrentWebAPI:
                             peer.uploaded > min(size_millesimal, _10m) and (
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 / size_millesimal < peer.relevance)):
-                        if reasons and reasons[0] == 'Seeding':
+                        if reasons and reasons[0] != 'Progress':
                             del reasons[0]
                         reasons.append('XunLei')
                     elif seeding:
@@ -687,46 +710,48 @@ class UTorrentWebAPI:
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 / size_millesimal < peer.relevance):
                         reasons.append('Leecher')
-                if not self.check_serious_leech:
-                    pass
-                elif seeding:
-                    self._statistics_uploaded.pop(hash, None)
-                elif reasons or peer.progress >= 1000:
-                    if size_last_downloaded > _10m:
-                        self._statistics_uploaded[hash].pop(ip_port, None)
-                else:
-                    if size_last_downloaded > _10m:
-                        try:
-                            _last_downloaded, _downloaded, _uploaded = \
-                                    self._statistics_uploaded[hash][ip_port]
-                        except KeyError:
-                            _last_downloaded = size_last_downloaded
-                            _downloaded = peer.downloaded
-                            _uploaded = peer.uploaded
-                        if size_last_downloaded - _last_downloaded > _10m:
-                            _downloaded = peer.downloaded
-                            _uploaded = peer.uploaded
-                        self._statistics_uploaded[hash][ip_port] = \
-                                _last_downloaded, _downloaded, _uploaded
-                        peer.downloaded -= _downloaded
-                        peer.uploaded -= _uploaded
-                    if ('U' in peer.flags and 'd' in peer.flags or
-                            peer.downspeed < 1024 and peer.waited > 60) and \
-                            peer.uploaded > min(max(size_tenth, _10m), _100m) and \
-                            peer.downloaded * 10 < peer.uploaded and \
-                            peer.downloaded * 10 / size_millesimal < peer.relevance:
-                        log(LANG_LEECHER_SUSPECTED)
-                        reasons.append('Suspected')
-                        reasons.append('Leecher')
+                if self.check_serious_leech:
+                    try:
+                        luploaded, suploaded, _suploaded, t = \
+                                self._statistics_uploaded[hash][ip_port]
+                    except KeyError:
+                        luploaded = suploaded = _suploaded = 0
+                        t = None
                         if size_last_downloaded > _10m:
-                            self._statistics_uploaded[hash].pop(ip_port, None)
-                            peer.downloaded += _downloaded
-                            peer.uploaded += _uploaded
+                            # May has been seeding before
+                            _suploaded = peer.uploaded
+                    if seeding:
+                        _suploaded = peer.uploaded - luploaded
+                        uploaded = 0
+                    else:
+                        luploaded = peer.uploaded
+                        if _suploaded:
+                            suploaded += _suploaded
+                            _suploaded = 0
+                        uploaded = luploaded - suploaded
+                    if not reasons and uploaded and peer.progress < 1000 and \
+                            ('d' in peer.flags or peer.waited > 60) and \
+                            peer.relevance > 0 and \
+                            uploaded > min(max(size_todl_tenth, _10m), _100m) and \
+                            peer.downloaded * 10 < uploaded and \
+                            peer.downloaded * 10 / size_millesimal < peer.relevance:
+                        ct = time.monotonic()
+                        if t is None:
+                            t = ct
+                        elif ct - t > peer.downloaded / _1m * 10:
+                            # Did not reached conditions within 10X seconds
+                            # X means it had downloaded X MiB from peer
+                            log(LANG_LEECHER_SUSPECTED)
+                            reasons.append('Suspected')
+                            reasons.append('Leecher')
+                            t = None
+                    else:
+                        t = None
+                    self._statistics_uploaded[hash][ip_port] = \
+                            luploaded, suploaded, _suploaded, t
                 if self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
                     log(LANG_UNKNOWN_CLIENT)
                 if reasons:
-                    if not seeding:
-                        self._statistics_progress.pop(ip_port, None)
                     try:
                         self.ban_push(hash, peer, ' '.join(reasons))
                     finally:
@@ -919,7 +944,7 @@ class UTorrentPairing:
         self._session = None
         if value and not (etype is HTTPError and value.code == 401):
             logging.exception(f'{self.log_header}{LANG_ERROR_OCCURRED}: {value}')
-        return True  # Make no Exception raised
+        return True  # Make no Exception would be raised
 
 
 CLL = f'\r{" " * _max_columns}\r'

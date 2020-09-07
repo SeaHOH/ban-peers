@@ -61,7 +61,7 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.6.1
+欢迎使用 Ban-Peers 0.6.2
 
 用法:
         ban_peers       [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
@@ -108,11 +108,12 @@ ban_peers -h
 
 ```markdown
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.6.1
+欢迎使用 Ban-Peers 0.6.2
 19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
+19:44:35 设定 uTorrent 配置 'ipfilter.enable' 到 True
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
@@ -121,7 +122,7 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.6.1
+欢迎使用 Ban-Peers 0.6.2
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username
@@ -130,6 +131,7 @@ X:\uTorrent
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
 19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
+19:44:35 设定 uTorrent 配置 'ipfilter.enable' 到 True
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
 ```
