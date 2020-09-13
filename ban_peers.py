@@ -357,6 +357,8 @@ class List2Attr:
             'RELEVANCE': 21
         }
     }
+    _32bit1 = ~(-1 << 32)
+    _32bit_signed_mini = -1 << 31
 
     def __init__(self, list:List[Union[int, str]], type:str) -> None:
         object.__setattr__(self, '_list', list)
@@ -365,6 +367,13 @@ class List2Attr:
     def __getattr__(self, name:str) -> Union[int, float, str]:
         name = name.upper()
         value = self._list[self._type[name]]
+        if isinstance(value, int) and value < 0:
+            if value < self._32bit_signed_mini:
+                # Overflow 32bit, debug/unknown
+                print(f'Found overfow: {name} = {value}')
+            else:
+                # Overflow 32bit signed (2G - 4G)
+                value &= self._32bit1
         if name == 'IP' and ':' in value:
             return f'[{value}]'
         elif name == 'CLIENT' and value[:1] == '-':
