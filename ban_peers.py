@@ -48,6 +48,9 @@ _max_columns -= 1
 _1m = 1024 * 1024
 _10m = _1m * 10
 _100m = _1m * 100
+_1g = _1m * 1024
+_2g = _1g * 2
+_4g = _1g * 4
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 # The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
@@ -361,34 +364,39 @@ class List2Attr:
     _32bit_signed_mini = -1 << 31
 
     def __init__(self, list:List[Union[int, str]], type:str) -> None:
+        object.__setattr__(self, '_cache', {})
         object.__setattr__(self, '_list', list)
         object.__setattr__(self, '_type', self._TYPES[type.upper()])
 
     def __getattr__(self, name:str) -> Union[int, float, str]:
         name = name.upper()
-        value = self._list[self._type[name]]
-        if isinstance(value, int) and value < 0:
-            if value < self._32bit_signed_mini:
-                # Overflow 32bit, debug/unknown
-                print(f'Found overfow: {name} = {value}')
-            else:
-                # Overflow 32bit signed (2G - 4G)
-                value &= self._32bit1
+        try:
+            return self._cache[name]
+        except KeyError:
+            value = self._list[self._type[name]]
+        if isinstance(value, int) and 0 > value >= self._32bit_signed_mini:
+            # [PEER] Overflow 32bit signed (2G - 4G)
+            value &= self._32bit1
         if name == 'IP' and ':' in value:
-            return f'[{value}]'
+            value = f'[{value}]'
         elif name == 'CLIENT' and value[:1] == '-':
-            return value.split('-')[1]
+            value = value.split('-')[1]
         elif name == 'AVAILABILITY':
-            return value / 65536
+            value = value / 65536
+        self._cache[name] = value
         return value
 
     def __setattr__(self, name:str, value:Union[int, str]) -> None:
         name = name.upper()
+        self._list[self._type[name]]
         if name == 'IP' and value[:1] == '[':
             value = value[1:-1]
         elif name == 'AVAILABILITY':
             value = int(value * 65536)
-        self._list[self._type[name]] = value
+        self._cache[name] = value
+
+    def getraw(self, name:str) -> Union[int, float, str]:
+        return self._list[self._type[name.upper()]]
 
 
 class UTorrentWebAPI:
@@ -421,6 +429,7 @@ class UTorrentWebAPI:
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
         self._seeds_private = {}
         self._statistics = {}
+        self._statistics_overflow = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
         self._statistics_uploaded = collections.defaultdict(dict)
         self._statistics_str = ''
@@ -537,6 +546,7 @@ class UTorrentWebAPI:
             self._params_list['cid'] = torrents['torrentc']
         for hash in torrents.get('torrentm', []):
             self._seeds_private.pop(hash, None)
+            self._statistics_overflow.pop(hash, None)
             self._statistics_progress.pop(hash, None)
             self._statistics_uploaded.pop(hash, None)
         for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
@@ -632,6 +642,23 @@ class UTorrentWebAPI:
                 if peer.ip in self.ipfilter:
                     continue
                 ip_port = f'{peer.ip}:{peer.port}'
+                # Relieve integer overflow 32bit in peer data
+                try:
+                    last_uploaded, last_downloaded, up_ot, down_ot = \
+                            self._statistics_overflow[hash][ip_port]
+                except KeyError:
+                    last_uploaded, last_downloaded, up_ot, down_ot = \
+                            peer.uploaded, peer.downloaded, 0, 0
+                if last_uploaded > peer.uploaded + _2g:
+                    up_ot += 1
+                if last_downloaded > peer.downloaded + _2g:
+                    down_ot += 1
+                self._statistics_overflow[hash][ip_port] = \
+                            peer.uploaded, peer.downloaded, up_ot, down_ot
+                if up_ot:
+                    peer.uploaded += up_ot * _4g
+                if down_ot:
+                    peer.downloaded += down_ot * _4g
                 if peer.progress >= 1000:
                     if 'u' in peer.flags.lower():
                         # This is not a check, should not be skipped
@@ -813,6 +840,7 @@ class UTorrentWebAPI:
                         if not disconnected:
                             print(f'{self.log_header}uTorrent {LANG_DISCONNECTED}')
                             # Don't clear `self._statistics`
+                            self._statistics_overflow.clear()
                             self._statistics_progress.clear()
                             self._statistics_uploaded.clear()
                         print(f'{self.log_header}{LANG_CONNECTION_REFUSED} '
