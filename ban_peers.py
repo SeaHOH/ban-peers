@@ -48,9 +48,11 @@ _max_columns -= 1
 _1m = 1024 * 1024
 _10m = _1m * 10
 _100m = _1m * 100
+_500m = _1m * 500
 _1g = _1m * 1024
 _2g = _1g * 2
 _4g = _1g * 4
+_10g = _1g * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 # The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
@@ -427,8 +429,10 @@ class UTorrentWebAPI:
         self.log_unknown = log_unknown
         self.log_header_fmt = log_header_fmt
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
+        self._high_level = set()
         self._seeds_private = {}
         self._statistics = {}
+        self._statistics_started = {}
         self._statistics_overflow = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
         self._statistics_uploaded = collections.defaultdict(dict)
@@ -532,12 +536,8 @@ class UTorrentWebAPI:
         try:
             return self._seeds_private[hash]
         except KeyError:
-            result = json.load(self.request(params={
-                'action': 'getprops',
-                'hash': hash
-            }))
-            self._seeds_private[hash] = private = \
-                    result['props'][0]['pex'] == -1
+            props = self.get_props(hash)
+            self._seeds_private[hash] = private = props['pex'] == -1
             return private
 
     def get_torrents(self) -> Iterable[List2Attr]:
@@ -545,7 +545,9 @@ class UTorrentWebAPI:
         if 'torrentc' in torrents:
             self._params_list['cid'] = torrents['torrentc']
         for hash in torrents.get('torrentm', []):
+            self._high_level.discard(hash)
             self._seeds_private.pop(hash, None)
+            self._statistics_started.pop(hash, None)
             self._statistics_overflow.pop(hash, None)
             self._statistics_progress.pop(hash, None)
             self._statistics_uploaded.pop(hash, None)
@@ -577,6 +579,22 @@ class UTorrentWebAPI:
         })
         if log:
             print(f'{self.log_header}{LANG_SET_SETTING} {s!r} {LANG_TO} {v}')
+
+    def get_props(self, hash:str) -> None:
+        result = json.load(self.request(params={
+            'action': 'getprops',
+            'hash': hash
+        }))
+        return result['props'][0]
+
+    def set_props(self, hash:str, s:str, v:Union[int, str, bool]) -> None:
+        self.request(params={
+            'action': 'setprops',
+            'hash': hash,
+            's': s,
+            'v': v
+        })
+        print(f'{self.log_header}[{hash}]{LANG_SET_PROPS} {s!r} {LANG_TO} {v}')
 
     def ban_peers(self) -> None:
         ct = int(time.time())
@@ -614,7 +632,7 @@ class UTorrentWebAPI:
         print(f'{self.log_header}{LANG_BANNED} '
               f'{ip}:{peer.port}@{peer.country}：{reason}, '
               f'{LANG_DOWNLOADED}: {make_size_human(peer.downloaded)}, '
-              f'{LANG_UPLOADED}: {make_size_human(peer.uploaded)} ')
+              f'{LANG_UPLOADED}: {make_size_human(peer.uploaded)}')
 
     def check_peers(self) -> None:
         def log(msg):
@@ -628,16 +646,39 @@ class UTorrentWebAPI:
             limit_dict_lenght(self.log_ip, 32)
 
         reasons = []
+        ct = time.monotonic()
         for torrent in self.get_torrents():
             size_millesimal = int(torrent.size / 1000)
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
-            if self.check_serious_leech:
+            if not seeding:
+                started = self._statistics_started.setdefault(hash, ct)
+            if self.check_fake_progress or self.check_serious_leech:
                 files = list(self.get_files(hash))
-                size_todl_tenth = int(sum(file.size for file in files
-                                     if file.priority) / 10)
-                size_last_downloaded = torrent.downloaded - sum(
-                                       file.downloaded for file in files)
+                size_todl = sum(file.size for file in files if file.priority)
+                size_todl_tenth = int(size_todl / 10)
+                size_downloaded = sum(file.downloaded for file in files)
+                size_last_downloaded = torrent.downloaded - size_downloaded
+                time_fp = 60
+                ratio_sl = 10
+                # High level thresholds are used for older/weaker Torrents
+                if hash in self._high_level:
+                    if torrent.availability < 10:
+                        time_fp = 300
+                        ratio_sl = 30
+                elif not seeding and ct - started > 300 and \
+                        torrent.eta * _10g > torrent.remaining * 86400:
+                        # Less than 10 GiB/day
+                    time_fp = 300
+                    ratio_sl = 30
+                    print(f'{self.log_header}[{hash}][{torrent.name}]'
+                          f'{LANG_INCREASE_THRESHOLD}')
+                    self._high_level.add(hash)
+                    if size_todl > _1g:
+                        # Limit upload rate to increase read cache hits
+                        # and availability (helps complete download)
+                        self.set_props(hash, 'ulrate',
+                                       _1m // 2 if size_todl > _10g else _1m)
             for peer in self.get_peers(hash):
                 if peer.ip in self.ipfilter:
                     continue
@@ -659,6 +700,7 @@ class UTorrentWebAPI:
                     peer.uploaded += up_ot * _4g
                 if down_ot:
                     peer.downloaded += down_ot * _4g
+                relevance = size_millesimal * peer.relevance + peer.downloaded
                 if peer.progress >= 1000:
                     if 'u' in peer.flags.lower():
                         # This is not a check, should not be skipped
@@ -682,10 +724,9 @@ class UTorrentWebAPI:
                     elif peer.inactive < 10 and \
                             (peer.uploaded - last_uploaded) > \
                             (peer.progress - last_progress + 1) * size_millesimal:
-                        ct = time.monotonic()
                         if t is None:
                             t = ct
-                        elif ct - t > 60:  # Did not recovered within one minute
+                        elif ct - t > time_fp:  # Did not recovered within a few minutes
                             if seeding:
                                 reasons.append('Seeding')
                             reasons.append('Progress')
@@ -695,8 +736,13 @@ class UTorrentWebAPI:
                     self._statistics_progress[hash][ip_port] = \
                             last_progress, last_uploaded, t
                 if reasons:
-                    log(f'{LANG_FACK_PROGRESS} [{peer.progress/10}%]')
-                if peer.port >= 65000 and \
+                    log(f'{LANG_FACK_PROGRESS}[{peer.progress/10}%]')
+                ### Start check client name
+                if len([c for c in peer.client.encode() if c > 127]) > \
+                        len(peer.client) // 2:
+                    # Anonymous
+                    peer.client = repr(peer.client)  # For better print
+                elif peer.port >= 65000 and \
                         peer.country == 'CN' and \
                         'Transmission' in peer.client and \
                         peer.downloaded == peer.relevance == 0:
@@ -709,10 +755,11 @@ class UTorrentWebAPI:
                     log(LANG_XUNLEI)
                     if not self.xunlei_reprieve or \
                             peer.port in [12345, 15000] or not seeding and (
-                            peer.downloaded == peer.relevance == 0 or
+                            180 < peer.waited < 3600 or
+                            peer.downloaded < _1m and peer.relevance == 0 or
                             peer.uploaded > min(size_millesimal, _10m) and (
                             peer.downloaded * 5 < peer.uploaded or
-                            peer.downloaded * 10 / size_millesimal < peer.relevance)):
+                            peer.downloaded * 10 < relevance)):
                         if reasons and reasons[0] != 'Progress':
                             del reasons[0]
                         reasons.append('XunLei')
@@ -724,7 +771,10 @@ class UTorrentWebAPI:
                     if seeding:
                         reasons.append('Seeding')
                         reasons.append('Player')
-                    elif peer.downloaded == peer.relevance == 0:
+                    elif peer.uploaded > peer.downloaded and (
+                            peer.relevance == 0 or
+                            peer.downspeed < 32768 or
+                            peer.downspeed * 10 < peer.upspeed):
                         reasons.append('Player')
                 elif peer.client.startswith('[FAKE]'):
                     # uTorrent identification
@@ -734,8 +784,11 @@ class UTorrentWebAPI:
                     if seeding:
                         reasons.append('Seeding')
                         reasons.append('Fake')
-                    elif peer.downloaded == 0 and \
-                            peer.uploaded > min(size_millesimal, _10m):
+                    elif peer.downloaded < peer.uploaded > \
+                            min(size_millesimal, _10m) and (
+                            peer.relevance == 0 or
+                            peer.downspeed < 32768 or
+                            peer.downspeed * 10 < peer.upspeed):
                         reasons.append('Fake')
                 elif LEECHER_OTHER.search(peer.client):
                     log(LANG_LEECHER_CLIENT)
@@ -744,8 +797,9 @@ class UTorrentWebAPI:
                         reasons.append('Leecher')
                     elif peer.uploaded > min(size_millesimal, _10m) and (
                             peer.downloaded * 5 < peer.uploaded or
-                            peer.downloaded * 10 / size_millesimal < peer.relevance):
+                            peer.downloaded * 10 < relevance):
                         reasons.append('Leecher')
+                ### End check client name
                 if self.check_serious_leech:
                     try:
                         luploaded, suploaded, _suploaded, t = \
@@ -765,16 +819,19 @@ class UTorrentWebAPI:
                             suploaded += _suploaded
                             _suploaded = 0
                         uploaded = luploaded - suploaded
-                    if not reasons and uploaded and peer.progress < 1000 and \
-                            ('d' in peer.flags or peer.waited > 60) and \
-                            peer.relevance > 0 and \
-                            uploaded > min(max(size_todl_tenth, _10m), _100m) and \
-                            peer.downloaded * 10 < uploaded and \
-                            peer.downloaded * 10 / size_millesimal < peer.relevance:
-                        ct = time.monotonic()
+                    if not reasons and uploaded and peer.progress < 1000 and (
+                            relevance == 0 and peer.uploaded > _500m or
+                            peer.relevance == 0 and
+                            peer.uploaded > max(peer.downloaded * 10, _1g) or
+                            peer.relevance > 0 and
+                            ('d' in peer.flags or peer.waited > 60 or
+                            0 < peer.downspeed * 100 < peer.upspeed) and
+                            uploaded > min(max(size_todl_tenth, _10m), _100m) and
+                            uploaded > peer.downloaded * ratio_sl < relevance):
                         if t is None:
                             t = ct
-                        elif ct - t > peer.downloaded / _1m * 10:
+                        elif peer.relevance == 0 or \
+                                ct - t > peer.downloaded / _1m * 10:
                             # Did not reached conditions within 10X seconds
                             # X means it had downloaded X MiB from peer
                             log(LANG_LEECHER_SUSPECTED)
@@ -840,6 +897,8 @@ class UTorrentWebAPI:
                         if not disconnected:
                             print(f'{self.log_header}uTorrent {LANG_DISCONNECTED}')
                             # Don't clear `self._statistics`
+                            self._high_level.clear()
+                            self._statistics_started.clear()
                             self._statistics_overflow.clear()
                             self._statistics_progress.clear()
                             self._statistics_uploaded.clear()
@@ -886,6 +945,7 @@ class UTorrentWebAPI:
                         self.running = True
                         pause = False
                         log(LANG_RESTART)
+                        self.set_setting('ipfilter.enable', True)
                     elif k in b'pP':
                         pause = not pause
                         if pause:
@@ -999,6 +1059,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_RUNNING = '运行'
     LANG_A_NAME = '自动屏蔽脚本'
     LANG_SET_SETTING = '设定 uTorrent 配置'
+    LANG_SET_PROPS = '设定属性'
     LANG_TO = '到'
     LANG_FAIL = '失败'
     LANG_ERROR_OCCURRED = '发生错误'
@@ -1007,6 +1068,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_DISCONNECTED = '已断开连接'
     LANG_BANNED = '已屏蔽'
     LANG_FOUND = '发现'
+    LANG_INCREASE_THRESHOLD = '提高附加检测阀值'
     LANG_FACK_PROGRESS = '汇报虚假进度'
     LANG_XUNLEI = '迅雷'
     LANG_PLAYER = '播放器'
@@ -1063,6 +1125,7 @@ else:
     LANG_RUNNING = ' running'
     LANG_A_NAME = 'auto-banning script '
     LANG_SET_SETTING = 'Set uTorrent setting'
+    LANG_SET_PROPS = 'set property'
     LANG_TO = 'to'
     LANG_FAIL = 'fail'
     LANG_ERROR_OCCURRED = 'error occurred'
@@ -1071,6 +1134,7 @@ else:
     LANG_DISCONNECTED = 'disconnected'
     LANG_BANNED = 'banned'
     LANG_FOUND = ' found '
+    LANG_INCREASE_THRESHOLD = 'increase additional check threshold'
     LANG_FACK_PROGRESS = 'report fack progress'
     LANG_XUNLEI = 'XunLei'
     LANG_PLAYER = 'player'
