@@ -4,7 +4,7 @@
 
 Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
-Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases，only banned for 1 hour if the torrent is seeding. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
+Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases, temporary banned for 1 hour if the torrent is seeding. Also can temporary banned peers which refused upload 10 minutes in downloading torrents if `(AVAILABILITY - 5) * SEEDS_SWARM > 1000`. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
 
 [A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via a translator. e.g. translate.google.com
 
@@ -63,12 +63,12 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.6.2
+Welcome using Ban-Peers 0.6.3
 
 Usage:
         ban_peers       [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD]
-                        [-e HOURS] [-f FORMAT] [-C] [-X] [-P] [-L] [-R] [-U]
-                        [-A] [-O] [-h] [-v] [IPFILTER-PATH]
+                        [-e HOURS] [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L]
+                        [-N] [-R] [-U] [-A] [-O] [-h] [-v] [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
@@ -86,6 +86,9 @@ Optional Arguments:
                         WebUI authorization, wait input if required
         -e HOURS, --expire HOURS
                         Ban expire time for peers, default 12 HOURS
+        -t MINUTES, --time-allowed-refuse MINUTES
+                        How much time to keep connecting before temporary banned
+                        refused upload peers, at least 5 MINUTES, default 10 MINUTES
         -f FORMAT, --log-header FORMAT
                         Format of log header, see time.strftime, default %H:%M:%S
         -C, --resolve-country
@@ -96,6 +99,9 @@ Optional Arguments:
                         Don't checking fake progress
         -L, --no-serious-leech-check
                         Don't checking serious leech
+        -N, --no-refused-upload-check
+                        Don't checking refused upload, this checking is useful
+                        to connect potential active peers
         -R, --private-check
                         Enable checking for private seeds
         -U, --log-unknown
@@ -111,7 +117,7 @@ Optional Arguments:
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.6.2
+Welcome using Ban-Peers 0.6.3
 19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
 19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
@@ -125,7 +131,7 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.6.2
+Welcome using Ban-Peers 0.6.3
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
@@ -147,6 +153,34 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 # Got troubles/ideas
 Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post them, maybe someone can help you.
+
+# What μTorrent settings should have been modified
+- Global
+
+    **bt.use_rangeblock**, using this tool, build-in range block should be disabled (by hash error).  
+    `False` when start-up
+
+    **ipfilter.enable**, enable/flush ipfilter.  
+    `True` when start-up, adding banned
+
+    **webui.allow_pairing**, modify more settings have to got pairing, μTorrent will show a pop-up of pairing request, please confirm carefully.  
+    `True` before modify ads settings  
+    `False` after modify ads settings, can also use parameters `-O` or `--no-close-pairing` to do not disable it
+
+    **gui.show_plus_upsell_nodes**, μTorrent sidebar upgrade tips will be reset at start-up.  
+    `True` when start-up, μTorrent re-started
+
+    **peer.resolve_country, resolve_peerips**, resolve country code of peer IPs.  
+    `True` when start-up，need to use parameters `-C` or `--resolve-country`, not every time
+
+    **Other ads settings**, modify some settings have to got pairing.  
+    For specific values see the part of `ANTI_ADS_SETTINGS` in source code, when start-up, modify all settings at once after got pairing, need to use parameters `-A` or `--remove-ads`, not every time
+
+- Torrent
+
+    **ulrate**, for older/weaker Torrents (in terms of E.T.A, less than 10 GiB/day), limit its upload rate helps complete download, and increase read cache hits in passing.  
+    `1048576` download size less than 1 GiB, limit to 1 MiB/s  
+    `524288` download size less than 10 GiB, limit to 512 KiB/s
 
 # Related projects
 - μTorrent
