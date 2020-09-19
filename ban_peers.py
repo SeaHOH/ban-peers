@@ -702,9 +702,13 @@ class UTorrentWebAPI:
                     peer.downloaded += down_ot * _4g
                 relevance = size_millesimal * peer.relevance + peer.downloaded
                 if peer.progress >= 1000:
+                    uc = self._statistics_progress[hash].pop(ip_port, None)
                     if 'u' in peer.flags.lower():
                         # This is not a check, should not be skipped
-                        reasons.append('Progress')
+                        if uc is None or isinstance(uc, tuple):
+                            self._statistics_progress[hash][ip_port] = True
+                        else:
+                            reasons.append('Progress')
                 elif not self.check_fake_progress:
                     pass
                 elif peer.uploaded > torrent.size:
@@ -715,7 +719,7 @@ class UTorrentWebAPI:
                         last_progress, last_uploaded, t = \
                                 self._statistics_progress[hash][ip_port]
                         fo = None
-                    except KeyError:
+                    except (KeyError, TypeError):
                         fo = True
                     if fo or peer.progress < last_progress:
                         last_progress = peer.progress
@@ -1178,6 +1182,7 @@ else:
                             'and to fail in older uTorrent')
     LANG_HELP_NO_CLOSE_PAIRING = 'Don\'t turn off Web Pairing setting after remove ads'
 
+description = __doc__
 __doc__ = f'''\
 {__app_name__} {__version__}
 
@@ -1202,7 +1207,7 @@ def main() -> None:
     }
     indent = 8
 
-    parser = argparse.ArgumentParser(description=__doc__, add_help=False)
+    parser = argparse.ArgumentParser(description=description, add_help=False)
     parser._get_formatter = lambda: argparse.HelpFormatter(parser.prog, indent)
     parser._positionals.title = LANG_HELP_POSITIONAL
     parser._optionals.title = LANG_HELP_OPTIONAL
