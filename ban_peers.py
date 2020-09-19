@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -405,9 +405,10 @@ class UTorrentWebAPI:
     def __init__(self,
                 ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
                 username:Optional[str]='', password:Optional[str]='',
-                expire:int=3600*12, log_header_fmt:str='%H:%M:%S',
-                xunlei_reprieve:bool=True, check_fake_progress:bool=True,
-                check_serious_leech:bool=True, check_private:bool=False,
+                expire:int=3600*12, time_allowed_refuse:int=600,
+                log_header_fmt:str='%H:%M:%S', xunlei_reprieve:bool=True,
+                check_fake_progress:bool=True, check_serious_leech:bool=True,
+                check_refused_upload:bool=True, check_private:bool=False,
                 log_unknown=False) -> None:
         while not ipfilter:
             ipfilter = input(LANG_INPUT_IPFILTER)
@@ -422,9 +423,11 @@ class UTorrentWebAPI:
         self._req = Request(self._url_root)
         self.set_authorization(username, password)
         self.expire = expire
+        self.time_allowed_refuse = min(time_allowed_refuse, 300)
         self.xunlei_reprieve = xunlei_reprieve
         self.check_fake_progress = check_fake_progress
         self.check_serious_leech = check_serious_leech
+        self.check_refused_upload = check_refused_upload
         self.check_private = check_private
         self.log_unknown = log_unknown
         self.log_header_fmt = log_header_fmt
@@ -436,6 +439,7 @@ class UTorrentWebAPI:
         self._statistics_overflow = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
         self._statistics_uploaded = collections.defaultdict(dict)
+        self._statistics_refused = collections.defaultdict(dict)
         self._statistics_str = ''
         self._need_save = False
         self.running = False
@@ -540,6 +544,9 @@ class UTorrentWebAPI:
             self._seeds_private[hash] = private = props['pex'] == -1
             return private
 
+    def is_availability_threshold(self, torrent:List2Attr) -> bool:
+        return (torrent.availability - 5) * torrent.seeds_swarm > 1000
+
     def get_torrents(self) -> Iterable[List2Attr]:
         torrents = json.load(self.request(params=self._params_list))
         if 'torrentc' in torrents:
@@ -551,10 +558,13 @@ class UTorrentWebAPI:
             self._statistics_overflow.pop(hash, None)
             self._statistics_progress.pop(hash, None)
             self._statistics_uploaded.pop(hash, None)
+            self._statistics_refused.pop(hash, None)
         for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
             torrent = List2Attr(torrent, 'torrent')
-            if torrent.peers_connected and (self.check_private or
-                     not self.is_private(torrent.hash)):
+            if (torrent.peers_connected or
+                    self.check_refused_upload and torrent.seeds_connected and
+                    self.is_availability_threshold(torrent)) and \
+                    (self.check_private or not self.is_private(torrent.hash)):
                 yield torrent
 
     def get_files(self, hash:str) -> Iterable[List2Attr]:
@@ -603,7 +613,7 @@ class UTorrentWebAPI:
         expire_ips = list(ip
             for ip, (_, reason, _, timestamp) in self.ipfilter.items()
             if timestamp < expire or timestamp < expire_interim and \
-                reason.startswith((b'Seeding', b'Suspected'))
+                reason.startswith((b'Seeding', b'Suspected', b'Refused'))
         )
         if self._need_save or expire_ips:
             for ip in expire_ips:
@@ -679,6 +689,7 @@ class UTorrentWebAPI:
                         # and availability (helps complete download)
                         self.set_props(hash, 'ulrate',
                                        _1m // 2 if size_todl > _10g else _1m)
+            banned_refused = False
             for peer in self.get_peers(hash):
                 if peer.ip in self.ipfilter:
                     continue
@@ -846,6 +857,22 @@ class UTorrentWebAPI:
                         t = None
                     self._statistics_uploaded[hash][ip_port] = \
                             luploaded, suploaded, _suploaded, t
+                if self.check_refused_upload and \
+                        not seeding and peer.downloaded == 0:
+                    t = self._statistics_refused[hash].get(ip_port)
+                    if reasons:
+                        t = None
+                    elif t is None:
+                        if 'd' in peer.flags:  # Start time counting
+                            t = ct
+                    elif not banned_refused and \
+                            self.is_availability_threshold(torrent) and \
+                            ct - t > self.time_allowed_refuse:
+                        log(f'{LANG_REFUSED_UPLOAD}[{torrent.availability:.3f}]')
+                        reasons.append('Refused')
+                        banned_refused = True  # One peer a loop
+                        t = None
+                    self._statistics_refused[hash][ip_port] = t
                 if self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
                     log(LANG_UNKNOWN_CLIENT)
                 if reasons:
@@ -906,6 +933,7 @@ class UTorrentWebAPI:
                             self._statistics_overflow.clear()
                             self._statistics_progress.clear()
                             self._statistics_uploaded.clear()
+                            self._statistics_refused.clear()
                         print(f'{self.log_header}{LANG_CONNECTION_REFUSED} '
                               f'WebUI@{self._url_root}', end='\r')
                         disconnected = err_cr = True
@@ -1074,6 +1102,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_FOUND = '发现'
     LANG_INCREASE_THRESHOLD = '提高附加检测阀值'
     LANG_FACK_PROGRESS = '汇报虚假进度'
+    LANG_REFUSED_UPLOAD = '拒绝上传'
     LANG_XUNLEI = '迅雷'
     LANG_PLAYER = '播放器'
     LANG_FACK_CLIENT = '假冒客户端'
@@ -1103,13 +1132,18 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_AUTHORIZATION = '网页界面的授权，如果需要将等待输入'
     LANG_HELP_EXPIRE_META = '小时'
     LANG_HELP_EXPIRE = '屏蔽对端的过期时间，默认'
+    LANG_HELP_TIME_ALLOWED_REFUSE_META = '分钟'
+    LANG_HELP_TIME_ALLOWED_REFUSE = ('临时屏蔽拒绝上传的对端前保持连接的时间，'
+                                     '最少 5 分钟，默认')
     LANG_HELP_HEADER_META = '格式'
     LANG_HELP_HEADER = '日志头格式，参见 time.strftime，默认'
     LANG_HELP_RESOLVE_COUNTRY = '启动时，设置 uTorrent 解析对端国家代码'
     LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
-    LANG_HELP_PRIVATE_CHECK = '启用对私人种子的检查'
+    LANG_HELP_NO_REFUSED_UPLOAD_CHECK = ('不进行拒绝上传检查，'
+                                         '此检查有助于连接潜在的活跃对端')
+    LANG_HELP_PRIVATE_CHECK = '启用对私有种子的检查'
     LANG_HELP_LOG_UNKNOWN = '将未知客户端记入日志'
     LANG_HELP_REMOVE_ADS = ('通过高级设置移除广告，仅工作于本地主机，'
                             '也无法工作于较旧版本的 uTorrent')
@@ -1140,6 +1174,7 @@ else:
     LANG_FOUND = ' found '
     LANG_INCREASE_THRESHOLD = 'increase additional check threshold'
     LANG_FACK_PROGRESS = 'report fack progress'
+    LANG_REFUSED_UPLOAD = 'refused upload'
     LANG_XUNLEI = 'XunLei'
     LANG_PLAYER = 'player'
     LANG_FACK_CLIENT = 'fack client'
@@ -1169,12 +1204,17 @@ else:
     LANG_HELP_AUTHORIZATION = 'WebUI authorization, wait input if required'
     LANG_HELP_EXPIRE_META = 'HOURS'
     LANG_HELP_EXPIRE = 'Ban expire time for peers, default'
+    LANG_HELP_TIME_ALLOWED_REFUSE_META = 'MINUTES'
+    LANG_HELP_TIME_ALLOWED_REFUSE = ('How much time to keep connecting before '
+            'temporary banned refused upload peers, at least 5 MINUTES, default')
     LANG_HELP_HEADER_META = 'FORMAT'
     LANG_HELP_HEADER = 'Format of log header, see time.strftime, default'
     LANG_HELP_RESOLVE_COUNTRY = 'Set uTorrent to resolved peer\'s country code at start-up'
     LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
+    LANG_HELP_NO_REFUSED_UPLOAD_CHECK = ('Don\'t checking refused upload, '
+                    'this checking is useful to connect potential active peers')
     LANG_HELP_PRIVATE_CHECK = 'Enable checking for private seeds'
     LANG_HELP_LOG_UNKNOWN = 'Logging unknown clients'
     LANG_HELP_REMOVE_ADS = ('Remove ads via set Advanced Settings, '
@@ -1221,7 +1261,12 @@ def main() -> None:
                         metavar=LANG_HELP_AUTHORIZATION_META,
                         help=LANG_HELP_AUTHORIZATION)
     parser.add_argument('-e', '--expire', type=int, metavar=LANG_HELP_EXPIRE_META,
-            help=f'{LANG_HELP_EXPIRE} {kwargs["expire"] // 3600} {LANG_HELP_EXPIRE_META}')
+            help=f'{LANG_HELP_EXPIRE} {kwargs["expire"]//3600} {LANG_HELP_EXPIRE_META}')
+    parser.add_argument('-t', '--time-allowed-refuse', type=int,
+                        metavar=LANG_HELP_TIME_ALLOWED_REFUSE_META,
+                        help=f'{LANG_HELP_TIME_ALLOWED_REFUSE} '
+                             f'{kwargs["time_allowed_refuse"]//60} '
+                             f'{LANG_HELP_TIME_ALLOWED_REFUSE_META}')
     parser.add_argument('-f', '--log-header', type=str, metavar=LANG_HELP_HEADER_META,
             help=f'{LANG_HELP_HEADER} {kwargs["log_header_fmt"]}'.replace("%", "%%"))
     parser.add_argument('-C', '--resolve-country', action='store_true',
@@ -1232,6 +1277,8 @@ def main() -> None:
                         help=LANG_HELP_NO_FAKE_PROGRESS_CHECK)
     parser.add_argument('-L', '--no-serious-leech-check', action='store_true',
                         help=LANG_HELP_NO_SERIOUS_LEECH_CHECK)
+    parser.add_argument('-N', '--no-refused-upload-check', action='store_true',
+                        help=LANG_HELP_NO_REFUSED_UPLOAD_CHECK)
     parser.add_argument('-R', '--private-check', action='store_true',
                         help=LANG_HELP_PRIVATE_CHECK)
     parser.add_argument('-U', '--log-unknown', action='store_true',
@@ -1262,6 +1309,8 @@ def main() -> None:
         kwargs['username'], kwargs['password'] = args.authorization.split(':')
     if args.expire:
         kwargs['expire'] = args.expire * 3600
+    if args.time_allowed_refuse:
+        kwargs['time_allowed_refuse'] = args.time_allowed_refuse * 60
     if args.log_header:
         kwargs['log_header_fmt'] = args.log_header
     if args.no_xunlei_reprieve:
@@ -1270,6 +1319,8 @@ def main() -> None:
         kwargs['check_fake_progress'] = False
     if args.no_serious_leech_check:
         kwargs['check_serious_leech'] = False
+    if args.no_refused_upload_check:
+        kwargs['check_refused_upload'] = False
     if args.private_check:
         kwargs['check_private'] = True
     if args.log_unknown:
