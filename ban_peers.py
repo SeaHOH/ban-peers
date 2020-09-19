@@ -1116,7 +1116,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_OPERATES_TIP = ('请选择你要执行的操作: '
                          '(Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复')
     LANG_PAIRING_REJECTED = '配对请求已被拒绝!'
-    LANG_HELP_USAGE = '用法'
+    LANG_HELP_USAGE = '用 法'
     LANG_HELP_POSITIONAL = '位置参数'
     LANG_HELP_OPTIONAL = '可选参数'
     LANG_HELP_HELP = '显示此帮助信息并退出'
@@ -1215,7 +1215,7 @@ else:
     LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
     LANG_HELP_NO_REFUSED_UPLOAD_CHECK = ('Don\'t checking refused upload, '
                     'this checking is useful to connect potential active peers')
-    LANG_HELP_PRIVATE_CHECK = 'Enable checking for private seeds'
+    LANG_HELP_PRIVATE_CHECK = 'Enable checking for private torrents'
     LANG_HELP_LOG_UNKNOWN = 'Logging unknown clients'
     LANG_HELP_REMOVE_ADS = ('Remove ads via set Advanced Settings, '
                             'only working for localhost, '
@@ -1245,10 +1245,13 @@ def main() -> None:
         for k, v in inspect.signature(UTorrentWebAPI.__init__).parameters.items()
         if v.default is not v.empty
     }
-    indent = 8
 
-    parser = argparse.ArgumentParser(description=description, add_help=False)
-    parser._get_formatter = lambda: argparse.HelpFormatter(parser.prog, indent)
+    def formatter_class(prog:str, *args, **kwargs) -> argparse.HelpFormatter:
+        return argparse.HelpFormatter(prog, indent_increment=4,
+                                      max_help_position=8, width=79)
+
+    parser = argparse.ArgumentParser(description=description, add_help=False,
+                                     formatter_class=formatter_class)
     parser._positionals.title = LANG_HELP_POSITIONAL
     parser._optionals.title = LANG_HELP_OPTIONAL
     parser.add_argument('ipfilter', nargs='?', metavar=LANG_HELP_IPFILTER_META,
@@ -1298,7 +1301,14 @@ def main() -> None:
         sys.exit()
     print(f'{LANG_WELCOME} {__app_name__} {__version__}')
     if args.help:
-        print(f'\n{LANG_HELP_USAGE}:\n{" " * indent}{parser.format_help()[7:]}')
+        def len_c(o:Any) -> int:
+            l = len(o)
+            if isinstance(o, str):
+                l += (len(o.encode()) - l) // 2
+            return l
+
+        argparse.len = len_c
+        print(f'\n{LANG_HELP_USAGE}{parser.format_help()[5:]}')
         sys.exit()
 
     if args.host:
