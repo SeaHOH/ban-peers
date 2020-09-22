@@ -4,7 +4,7 @@
 
 这是一个用 Python 写的工具，通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
 
-每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝上传 10 分钟的对端，如果 `(健康度 - 5) * 总种子数 > 1000`。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
+每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝上传 10 分钟的对端，如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
 
 给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/issues/1)。
 
@@ -61,60 +61,59 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.6.3
+欢迎使用 Ban-Peers 0.9.0
 
 用 法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
-                [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O] [-h]
-                [-v]
-                [IP屏蔽配置路径]
+                 [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O] [-h]
+                 [-v]
+                 [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 
 位置参数:
-   IP屏蔽配置路径
-       ipfilter 目录或文件路径，留空将等待输入。重要提示: 必须是 uTorrent 配置
-       使用的路径!
+    IP屏蔽配置路径  ipfilter 目录或文件路径，留空将等待输入。重要提示: 必须是
+                    uTorrent 配置使用的路径!
 
 可选参数:
-   -H IP|域名, --host IP|域名
-       网页界面的主机，默认 127.0.0.1
-   -p 端口, --port 端口
-       网页界面的端口，默认 8080
-   -a 用户名:密码, --authorization 用户名:密码
-       网页界面的授权，如果需要将等待输入
-   -e 小时, --expire 小时
-       屏蔽对端的过期时间，默认 12 小时
-   -t 分钟, --time-allowed-refuse 分钟
-       临时屏蔽拒绝上传的对端前保持连接的时间，最少 5 分钟，默认 10 分钟
-   -f 格式, --log-header 格式
-       日志头格式，参见 time.strftime，默认 %H:%M:%S
-   -C, --resolve-country
-       启动时，设置 uTorrent 解析对端国家代码
-   -X, --no-xunlei-reprieve
-       直接屏蔽迅雷，不进行更多的检查
-   -P, --no-fake-progress-check
-       不进行虚假进度检查
-   -L, --no-serious-leech-check
-       不进行严重吸血检查
-   -N, --no-refused-upload-check
-       不进行拒绝上传检查，此检查有助于连接潜在的活跃对端
-   -R, --private-check
-       启用对私有种子的检查
-   -U, --log-unknown
-       将未知客户端记入日志
-   -A, --remove-ads
-       通过高级设置移除广告，仅工作于本地主机，也无法工作于较旧版本的 uTorrent
-   -O, --no-close-pairing
-       移除广告后，不关闭网络配对配置项
-   -h, --help
-       显示此帮助信息并退出
-   -v, --version
-       显示版本信息并退出
+    -H IP|域名, --host IP|域名
+                    网页界面的主机，默认 127.0.0.1
+    -p 端口, --port 端口
+                    网页界面的端口，默认 8080
+    -a 用户名:密码, --authorization 用户名:密码
+                    网页界面的授权，如果需要将等待输入
+    -e 小时, --expire 小时
+                    屏蔽对端的过期时间，默认 12 小时
+    -t 分钟, --time-allowed-refuse 分钟
+                    临时屏蔽拒绝上传的对端前保持连接的时间，最少 5 分钟，默认
+                    10 分钟
+    -f 格式, --log-header 格式
+                    日志头格式，参见 time.strftime，默认 %H:%M:%S
+    -C, --resolve-country
+                    启动时，设置 uTorrent 解析对端国家代码
+    -X, --no-xunlei-reprieve
+                    直接屏蔽迅雷，不进行更多的检查
+    -P, --no-fake-progress-check
+                    不进行虚假进度检查
+    -L, --no-serious-leech-check
+                    不进行严重吸血检查，匿名对端除外
+    -N, --no-refused-upload-check
+                    不进行拒绝上传检查，此检查有助于连接潜在的活跃对端
+    -R, --private-check
+                    启用对私有种子的检查
+    -U, --log-unknown
+                    将未知客户端记入日志
+    -A, --remove-ads
+                    通过高级设置移除广告，仅工作于本地主机，也无法工作于较旧版
+                    本的 uTorrent
+    -O, --no-close-pairing
+                    移除广告后，不关闭网络配对配置项
+    -h, --help      显示此帮助信息并退出
+    -v, --version   显示版本信息并退出
 ```
 
 ```markdown
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.6.3
+欢迎使用 Ban-Peers 0.9.0
 19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
@@ -128,7 +127,7 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.6.3
+欢迎使用 Ban-Peers 0.9.0
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username

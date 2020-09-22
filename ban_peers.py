@@ -5,7 +5,7 @@
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for uTorrent.
 """
 __app_name__ = 'Ban-Peers'
-__version__ = '0.6.3'
+__version__ = '0.9.0'
 __author__ = 'SeaHOH<seahoh@gmail.com>'
 __license__ = 'MIT'
 __copyright__ = '2020 SeaHOH'
@@ -544,9 +544,6 @@ class UTorrentWebAPI:
             self._seeds_private[hash] = private = props['pex'] == -1
             return private
 
-    def is_availability_threshold(self, torrent:List2Attr) -> bool:
-        return (torrent.availability - 5) * torrent.seeds_swarm > 1000
-
     def get_torrents(self) -> Iterable[List2Attr]:
         torrents = json.load(self.request(params=self._params_list))
         if 'torrentc' in torrents:
@@ -561,9 +558,7 @@ class UTorrentWebAPI:
             self._statistics_refused.pop(hash, None)
         for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
             torrent = List2Attr(torrent, 'torrent')
-            if (torrent.peers_connected or
-                    self.check_refused_upload and torrent.seeds_connected and
-                    self.is_availability_threshold(torrent)) and \
+            if (torrent.peers_connected or torrent.seeds_connected) and \
                     (self.check_private or not self.is_private(torrent.hash)):
                 yield torrent
 
@@ -658,15 +653,17 @@ class UTorrentWebAPI:
         reasons = []
         ct = time.monotonic()
         for torrent in self.get_torrents():
-            size_millesimal = int(torrent.size / 1000)
+            size_millesimal = torrent.size // 1000
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
-            if not seeding:
+            if seeding:
+                self._statistics_started.pop(hash, None)
+            else:
                 started = self._statistics_started.setdefault(hash, ct)
             if self.check_fake_progress or self.check_serious_leech:
                 files = list(self.get_files(hash))
                 size_todl = sum(file.size for file in files if file.priority)
-                size_todl_tenth = int(size_todl / 10)
+                size_todl_tenth = size_todl // 10
                 size_downloaded = sum(file.downloaded for file in files)
                 size_last_downloaded = torrent.downloaded - size_downloaded
                 time_fp = 60
@@ -689,9 +686,10 @@ class UTorrentWebAPI:
                         # and availability (helps complete download)
                         self.set_props(hash, 'ulrate',
                                        _1m // 2 if size_todl > _10g else _1m)
-            banned_refused = False
+            allow_banned_refused_upload = torrent.availability > 10
             for peer in self.get_peers(hash):
-                if peer.ip in self.ipfilter:
+                if peer.ip in self.ipfilter or peer.upspeed < 256 and \
+                        peer.progress == peer.relevance == peer.downspeed == 0:
                     continue
                 ip_port = f'{peer.ip}:{peer.port}'
                 # Relieve integer overflow 32bit in peer data
@@ -712,20 +710,22 @@ class UTorrentWebAPI:
                 if down_ot:
                     peer.downloaded += down_ot * _4g
                 relevance = size_millesimal * peer.relevance + peer.downloaded
-                if peer.progress >= 1000:
-                    uc = self._statistics_progress[hash].pop(ip_port, None)
+                if peer.downloaded > 0:
+                    self._statistics_progress[hash].pop(ip_port, None)
+                elif peer.progress >= 1000:
+                    uct = self._statistics_progress[hash].pop(ip_port, None)
                     if 'u' in peer.flags.lower():
                         # This is not a check, should not be skipped
-                        if uc is None or isinstance(uc, tuple):
-                            self._statistics_progress[hash][ip_port] = True
-                        else:
+                        if uct is None or isinstance(uct, tuple):
+                            self._statistics_progress[hash][ip_port] = ct
+                        elif ct - uct < 20:
                             reasons.append('Progress')
                 elif not self.check_fake_progress:
                     pass
                 elif peer.uploaded > torrent.size:
                     reasons.append('Suspected')
                     reasons.append('Progress')
-                elif seeding or peer.downloaded == 0:
+                else:
                     try:
                         last_progress, last_uploaded, t = \
                                 self._statistics_progress[hash][ip_port]
@@ -737,6 +737,7 @@ class UTorrentWebAPI:
                         last_uploaded = peer.uploaded
                         t = None
                     elif peer.inactive < 10 and \
+                            peer.progress - last_progress < 50 and \
                             (peer.uploaded - last_uploaded) > \
                             (peer.progress - last_progress + 1) * size_millesimal:
                         if t is None:
@@ -753,14 +754,13 @@ class UTorrentWebAPI:
                 if reasons:
                     log(f'{LANG_FACK_PROGRESS}[{peer.progress/10}%]')
                 ### Start check client name
-                if len([c for c in peer.client.encode() if c > 127]) > \
-                        len(peer.client) // 2:
-                    # Anonymous
+                anonymous = False
+                if sum(1 if ord(c) < 128 else -1 for c in peer.client) < 0:
+                    anonymous = True
                     peer.client = repr(peer.client)  # For better print
-                elif peer.port >= 65000 and \
-                        peer.country == 'CN' and \
-                        'Transmission' in peer.client and \
-                        peer.downloaded == peer.relevance == 0:
+                elif peer.port >= 65000 and 'd' in peer.flags and \
+                        relevance == 0 and peer.country == 'CN' and \
+                        'Transmission' in peer.client:
                     # Chinese Offline Download Servers, almost are leech clients
                     log(LANG_OFFLINE_SERVER)
                     if reasons and reasons[0] != 'Progress':
@@ -815,7 +815,7 @@ class UTorrentWebAPI:
                             peer.downloaded * 10 < relevance):
                         reasons.append('Leecher')
                 ### End check client name
-                if self.check_serious_leech:
+                if self.check_serious_leech or anonymous:
                     try:
                         luploaded, suploaded, _suploaded, t = \
                                 self._statistics_uploaded[hash][ip_port]
@@ -865,12 +865,11 @@ class UTorrentWebAPI:
                     elif t is None:
                         if 'd' in peer.flags:  # Start time counting
                             t = ct
-                    elif not banned_refused and \
-                            self.is_availability_threshold(torrent) and \
+                    elif allow_banned_refused_upload and \
                             ct - t > self.time_allowed_refuse:
                         log(f'{LANG_REFUSED_UPLOAD}[{torrent.availability:.3f}]')
                         reasons.append('Refused')
-                        banned_refused = True  # One peer a loop
+                        allow_banned_refused_upload = False  # One peer a loop
                         t = None
                     self._statistics_refused[hash][ip_port] = t
                 if self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
@@ -1140,7 +1139,7 @@ if locale.getdefaultlocale()[0] == 'zh_CN':
     LANG_HELP_RESOLVE_COUNTRY = '启动时，设置 uTorrent 解析对端国家代码'
     LANG_HELP_NO_XUNLEI_REPRIEVE = '直接屏蔽迅雷，不进行更多的检查'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = '不进行虚假进度检查'
-    LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查'
+    LANG_HELP_NO_SERIOUS_LEECH_CHECK = '不进行严重吸血检查，匿名对端除外'
     LANG_HELP_NO_REFUSED_UPLOAD_CHECK = ('不进行拒绝上传检查，'
                                          '此检查有助于连接潜在的活跃对端')
     LANG_HELP_PRIVATE_CHECK = '启用对私有种子的检查'
@@ -1212,7 +1211,7 @@ else:
     LANG_HELP_RESOLVE_COUNTRY = 'Set uTorrent to resolved peer\'s country code at start-up'
     LANG_HELP_NO_XUNLEI_REPRIEVE = 'Banned XunLei directly, no more checking'
     LANG_HELP_NO_FAKE_PROGRESS_CHECK = 'Don\'t checking fake progress'
-    LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech'
+    LANG_HELP_NO_SERIOUS_LEECH_CHECK = 'Don\'t checking serious leech, except anonymous peers'
     LANG_HELP_NO_REFUSED_UPLOAD_CHECK = ('Don\'t checking refused upload, '
                     'this checking is useful to connect potential active peers')
     LANG_HELP_PRIVATE_CHECK = 'Enable checking for private torrents'
@@ -1248,7 +1247,7 @@ def main() -> None:
 
     def formatter_class(prog:str, *args, **kwargs) -> argparse.HelpFormatter:
         return argparse.HelpFormatter(prog, indent_increment=4,
-                                      max_help_position=8, width=79)
+                                      max_help_position=20, width=79)
 
     parser = argparse.ArgumentParser(description=description, add_help=False,
                                      formatter_class=formatter_class)
@@ -1301,13 +1300,51 @@ def main() -> None:
         sys.exit()
     print(f'{LANG_WELCOME} {__app_name__} {__version__}')
     if args.help:
+        # Simple monkey patches for help format displaying compatibility of
+        # Unicode Basic Multilingual Plane
+        import textwrap
+
+        # U+2000 - Start of General Punctuation
+        wordsep_unicode_simple = re.compile('[\u0000-\u1FFF]+|[\u2000-\uFFFF]')
+
+        # Action help
+        def _split(self, text):
+            chunks = []
+            for chunk in _split_o(self, text):
+                cl = wordsep_unicode_simple.findall(chunk)
+                if cl:
+                    chunks.extend(cl)
+                else:
+                    chunks.append(chunk)
+            return chunks
+
+        # Action header
+        def _join_parts(self, part_strings):
+            action_header = part_strings[0]
+            if not action_header.endswith('\n'):
+                p = len_c(action_header) - self._max_help_position
+                if p > 0:
+                    part_strings[0] = action_header[:-p]
+            return _join_parts_o(self, part_strings)
+
+        # String displaying lenght
         def len_c(o:Any) -> int:
-            l = len(o)
             if isinstance(o, str):
-                l += (len(o.encode()) - l) // 2
+                l = 0
+                for c in o:
+                    if ord(c) > 0x036F:  # End of Combining Diacritics Marks
+                        l += 2
+                    else:
+                        l += 1
+            else:
+                l = len(o)
             return l
 
-        argparse.len = len_c
+        _split_o = textwrap.TextWrapper._split
+        textwrap.TextWrapper._split = _split
+        _join_parts_o = argparse.HelpFormatter._join_parts
+        argparse.HelpFormatter._join_parts = _join_parts
+        argparse.len = textwrap.len = len_c
         print(f'\n{LANG_HELP_USAGE}{parser.format_help()[5:]}')
         sys.exit()
 

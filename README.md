@@ -4,7 +4,7 @@
 
 Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
 
-Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases, temporary banned for 1 hour if the torrent is seeding. Also can temporary banned peers which refused upload 10 minutes in downloading torrents if `(AVAILABILITY - 5) * SEEDS_SWARM > 1000`. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
+Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases, temporary banned for 1 hour if the torrent is seeding. Also can temporary banned peers which refused upload 10 minutes in downloading torrents if AVAILABILITY greater than 10. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
 
 [A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via a translator. e.g. translate.google.com
 
@@ -63,7 +63,7 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.6.3
+Welcome using Ban-Peers 0.9.0
 
 Usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
                  [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
@@ -74,53 +74,51 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 
 Positional Arguments:
-    IPFILTER-PATH
-        Path of ipfilter dir/file, wait input if empty. IMPORTANT NOTICE: must
-        be the uTorrent settings path!
+    IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty. IMPORTANT
+                    NOTICE: must be the uTorrent settings path!
 
 Optional Arguments:
     -H IP|DOMAIN, --host IP|DOMAIN
-        WebUI host, default 127.0.0.1
+                    WebUI host, default 127.0.0.1
     -p PORT, --port PORT
-        WebUI port, default 8080
+                    WebUI port, default 8080
     -a USERNAME:PASSWORD, --authorization USERNAME:PASSWORD
-        WebUI authorization, wait input if required
+                    WebUI authorization, wait input if required
     -e HOURS, --expire HOURS
-        Ban expire time for peers, default 12 HOURS
+                    Ban expire time for peers, default 12 HOURS
     -t MINUTES, --time-allowed-refuse MINUTES
-        How much time to keep connecting before temporary banned refused upload
-        peers, at least 5 MINUTES, default 10 MINUTES
+                    How much time to keep connecting before temporary banned
+                    refused upload peers, at least 5 MINUTES, default 10
+                    MINUTES
     -f FORMAT, --log-header FORMAT
-        Format of log header, see time.strftime, default %H:%M:%S
+                    Format of log header, see time.strftime, default %H:%M:%S
     -C, --resolve-country
-        Set uTorrent to resolved peer's country code at start-up
+                    Set uTorrent to resolved peer's country code at start-up
     -X, --no-xunlei-reprieve
-        Banned XunLei directly, no more checking
+                    Banned XunLei directly, no more checking
     -P, --no-fake-progress-check
-        Don't checking fake progress
+                    Don't checking fake progress
     -L, --no-serious-leech-check
-        Don't checking serious leech
+                    Don't checking serious leech, except anonymous peers
     -N, --no-refused-upload-check
-        Don't checking refused upload, this checking is useful to connect
-        potential active peers
+                    Don't checking refused upload, this checking is useful to
+                    connect potential active peers
     -R, --private-check
-        Enable checking for private torrents
+                    Enable checking for private torrents
     -U, --log-unknown
-        Logging unknown clients
+                    Logging unknown clients
     -A, --remove-ads
-        Remove ads via set Advanced Settings, only working for localhost, and
-        to fail in older uTorrent
+                    Remove ads via set Advanced Settings, only working for
+                    localhost, and to fail in older uTorrent
     -O, --no-close-pairing
-        Don't turn off Web Pairing setting after remove ads
-    -h, --help
-        Show this help message and exit
-    -v, --version
-        Show version and exit
+                    Don't turn off Web Pairing setting after remove ads
+    -h, --help      Show this help message and exit
+    -v, --version   Show version and exit
 ```
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.6.3
+Welcome using Ban-Peers 0.9.0
 19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
 19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
@@ -134,7 +132,7 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.6.3
+Welcome using Ban-Peers 0.9.0
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
