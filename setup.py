@@ -26,7 +26,7 @@ def get_metadata():
     content = read_file(module)
     code = content[:content.find('# END OF METADATA')]
     metadata = {}
-    exec(code, metadata)
+    exec(code, None, metadata)
     return metadata
 
 
@@ -119,7 +119,7 @@ setup(
     author_email=metadata['__email__'],
     url=metadata['__webpage__'],
     license=metadata['__license__'],
-    description=metadata['__doc__'].replace('uTorrent', 'μTorrent'),
+    description=metadata['__doc__'].replace('uTorrent', 'μTorrent').replace('\n', ''),
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
     keywords='BitTorrent uTorrent anti-leech ban block XunLei anti-ads',
