@@ -1,0 +1,6 @@
+Files copy from the cpython distribution
+
+  i18n/msgfmt.py (modified)
+    It is not always installed, is used to build mo files when install package.
+  i18n/gettext.py (part & modified)
+    It enhance origin function for find/read mo files from zip archive.

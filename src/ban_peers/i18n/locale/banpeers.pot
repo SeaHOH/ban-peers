@@ -1,0 +1,300 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020 SeaHOH
+# This file is distributed under the same license as the Ban-Peers package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Ban-Peers 0.9.1\n"
+"Report-Msgid-Bugs-To: seahoh@gmail.com\n"
+"POT-Creation-Date: 2020-10-06 19:50+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ban_peers/__init__.py:6
+msgid ""
+"Checking & banning BitTorrent leech peers via Web API, remove ads, working "
+"for\n"
+"uTorrent.\n"
+msgstr ""
+
+#: ban_peers/__init__.py:452
+msgid "Please input uTorrent settings folder path or ipfilter file path:\n"
+msgstr ""
+
+#: ban_peers/__init__.py:459
+#, python-format
+msgid "Unable to connect %(host)s:%(port)d"
+msgstr ""
+
+#: ban_peers/__init__.py:570
+msgid "Please input WebUI username: "
+msgstr ""
+
+#: ban_peers/__init__.py:571
+msgid "Please input WebUI password: "
+msgstr ""
+
+#: ban_peers/__init__.py:637 ban_peers/__init__.py:1160
+#, python-format
+msgid "Set uTorrent setting %(name)r to %(value)s"
+msgstr ""
+
+#: ban_peers/__init__.py:654
+#, python-format
+msgid "[%(hash)s] set property %(name)r to %(value)s"
+msgstr ""
+
+#: ban_peers/__init__.py:693
+#, python-format
+msgid ""
+"Banned %(ip)s:%(port)d@%(country)s: %(reason)s, downloaded: %(dlsize)s, "
+"uploaded: %(ulsize)s"
+msgstr ""
+
+#: ban_peers/__init__.py:706
+#, python-format
+msgid "[%(hash)s][%(torrent)s] found %(message)s: [%(client)s]@%(ip&port)s"
+msgstr ""
+
+#: ban_peers/__init__.py:752
+#, python-format
+msgid "[%(hash)s][%(torrent)s] increase additional check threshold"
+msgstr ""
+
+#: ban_peers/__init__.py:843
+#, python-format
+msgid "report fack progress [%(progress).1f%%]"
+msgstr ""
+
+#: ban_peers/__init__.py:854
+msgid "offline download server"
+msgstr ""
+
+#: ban_peers/__init__.py:859
+msgid "XunLei"
+msgstr ""
+
+#: ban_peers/__init__.py:874
+msgid "player"
+msgstr ""
+
+#: ban_peers/__init__.py:887
+msgid "fack client"
+msgstr ""
+
+#: ban_peers/__init__.py:898
+msgid "leecher client"
+msgstr ""
+
+#: ban_peers/__init__.py:942
+msgid "highly suspected of leecher"
+msgstr ""
+
+#: ban_peers/__init__.py:960
+#, python-format
+msgid "refused upload [%(availability).3f%%]"
+msgstr ""
+
+#: ban_peers/__init__.py:967
+msgid "unknown client"
+msgstr ""
+
+#: ban_peers/__init__.py:981
+#, python-format
+msgid ""
+"Statis: %(ipsc)d IPs, %(torrentsuc)d/%(torrentsc)d Torrents, D: %(dlsize)s, "
+"U: %(ulsize)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1003
+#, python-format
+msgid "Auto-banning script %(state)s running"
+msgstr ""
+
+#: ban_peers/__init__.py:1013
+msgid "start"
+msgstr ""
+
+#: ban_peers/__init__.py:1025
+msgid "uTorrent has disconnected"
+msgstr ""
+
+#: ban_peers/__init__.py:1033
+#, python-format
+msgid "Unable to connect WebUI: %(url)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1038
+#, python-format
+msgid "Error occurred: %(error)s, %(url)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1041 ban_peers/__init__.py:1180
+#, python-format
+msgid "%(logheader)s Error occurred: %(error)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1045
+msgid "uTorrent has reconnected"
+msgstr ""
+
+#: ban_peers/__init__.py:1054
+msgid "Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed"
+msgstr ""
+
+#: ban_peers/__init__.py:1057
+msgid "DISCONNECTED"
+msgstr ""
+
+#: ban_peers/__init__.py:1064 ban_peers/__init__.py:1069
+msgid "quit"
+msgstr ""
+
+#: ban_peers/__init__.py:1071
+msgid "stop"
+msgstr ""
+
+#: ban_peers/__init__.py:1077
+msgid "restart"
+msgstr ""
+
+#: ban_peers/__init__.py:1082
+msgid "pause"
+msgstr ""
+
+#: ban_peers/__init__.py:1084
+msgid "proceed"
+msgstr ""
+
+#: ban_peers/__init__.py:1124
+msgid "Pairing request has been rejected!"
+msgstr ""
+
+#: ban_peers/__init__.py:1157
+#, python-format
+msgid "set_setting(%(name)r, %(value)s) fail: %(error)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1209
+msgid "IPFILTER-PATH"
+msgstr ""
+
+#: ban_peers/__init__.py:1211
+msgid ""
+"Path of ipfilter dir/file, wait input if empty. IMPORTANT NOTICE: must be "
+"the uTorrent settings path!"
+msgstr ""
+
+#: ban_peers/__init__.py:1214
+msgid "IP|DOMAIN"
+msgstr ""
+
+#: ban_peers/__init__.py:1216
+#, python-format
+msgid "WebUI host, default %(host)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1218
+msgid "PORT"
+msgstr ""
+
+#: ban_peers/__init__.py:1220
+#, python-format
+msgid "WebUI port, default %(port)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1222
+msgid "USERNAME:PASSWORD"
+msgstr ""
+
+#: ban_peers/__init__.py:1224
+msgid "WebUI authorization, wait input if required"
+msgstr ""
+
+#: ban_peers/__init__.py:1226
+msgid "HOURS"
+msgstr ""
+
+#: ban_peers/__init__.py:1228
+#, python-format
+msgid "Ban expire time for peers, default %(time)s hours"
+msgstr ""
+
+#: ban_peers/__init__.py:1231
+msgid "MINUTES"
+msgstr ""
+
+#: ban_peers/__init__.py:1233
+#, python-format
+msgid ""
+"How much time to keep connecting before temporary banned refused upload "
+"peers, at least 5 minutes, default %(time)s minutes"
+msgstr ""
+
+#: ban_peers/__init__.py:1238
+msgid "FORMAT"
+msgstr ""
+
+#: ban_peers/__init__.py:1240
+#, python-format
+msgid "Format of log header, see time.strftime, default %(time)s"
+msgstr ""
+
+#: ban_peers/__init__.py:1246
+msgid "Set uTorrent to resolved peer's country code at start-up"
+msgstr ""
+
+#: ban_peers/__init__.py:1251
+msgid "Banned XunLei directly, no more checking"
+msgstr ""
+
+#: ban_peers/__init__.py:1255
+msgid "Don't checking fake progress"
+msgstr ""
+
+#: ban_peers/__init__.py:1259
+msgid "Don't checking serious leech, except anonymous peers"
+msgstr ""
+
+#: ban_peers/__init__.py:1263
+msgid ""
+"Don't checking refused upload, this checking is useful to connect potential "
+"active peers"
+msgstr ""
+
+#: ban_peers/__init__.py:1268
+msgid "Enable checking for private torrents"
+msgstr ""
+
+#: ban_peers/__init__.py:1272
+msgid "Logging unknown clients"
+msgstr ""
+
+#: ban_peers/__init__.py:1276
+msgid ""
+"Remove ads via set Advanced Settings, only working for localhost, and to "
+"fail in older uTorrent"
+msgstr ""
+
+#: ban_peers/__init__.py:1281
+msgid "Don't turn off Web Pairing setting after"
+msgstr ""
+
+#: ban_peers/__init__.py:1285
+msgid "Show this help message and exit"
+msgstr ""
+
+#: ban_peers/__init__.py:1289
+msgid "Show version and exit"
+msgstr ""
+
+#: ban_peers/__init__.py:1295
+msgid "Welcome using"
+msgstr ""

@@ -2,9 +2,16 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-这是一个用 Python 写的工具，通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
+这是一个用 Python 写的工具，通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，
+工作于 μTorrent。主要屏蔽迅雷、百毒、QQ、离线下载服务器等臭名昭著的吸血客户端，
+还有 BT 播放器、假冒客户端、虚假进度，以及事实上的严重吸血对端。
 
-每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝上传 10 分钟的对端，如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，它们会被原样保存。
+每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是
+一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血
+措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的
+仍然屏蔽 12 小时，无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝
+上传 10 分钟的对端，如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围
+格式屏蔽 (非单 IP 格式)，它们会被原样保存。
 
 给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/issues/1)。
 
@@ -13,7 +20,8 @@
 # 注意事项
 - 无法在未提供 `getpeers` API 的旧版本 μTorrent 中正常工作。
 - **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
-- 虽然已采取一些预防措施，如果你仍然发现有正常的对端被错误屏蔽，请反馈到 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
+- 虽然已采取一些预防措施，如果你仍然发现有正常的对端被错误屏蔽，
+  请反馈到 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
 # 安装
 安装自
@@ -23,12 +31,21 @@
 
     pip3 install ban-peers
 
-或者下载源码安装
+或者下载源码安装，这样将安装成 egg 包
 
     python setup.py install
 
+或者下载源码打包成 .pyz (Zip App)，支持三个 zipapp 模块参数 (output/python/compress)
+
+    python setup.py bdist_pyz -compress
+
+    python setup.py bdist_pyz -compress -output ban_peers -python python38
+
 # 兼容性
 - Python >= 3.7
+- Zip 安全
+- 支持 `python -m` 调用
+- 支持 I18N，欢迎[参与本地化](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
 # 使用
 首先，必须在 μTorrent 设置中启用网页界面；然后运行 Ban-Peers 于指定的 ipfilter.dat 文件。
@@ -61,7 +78,7 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.9.0
+欢迎使用 Ban-Peers 0.9.1
 
 用 法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
                  [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O] [-h]
@@ -113,7 +130,7 @@ ban_peers -h
 
 ```markdown
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.9.0
+欢迎使用 Ban-Peers 0.9.1
 19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
 19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
 19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
@@ -127,7 +144,7 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.9.0
+欢迎使用 Ban-Peers 0.9.1
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username
@@ -148,7 +165,8 @@ X:\uTorrent
 - 恢复：只是恢复检查。
 
 # 遇到麻烦/有其它想法
-访问 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)并贴出它们，也许有人能够帮到你。
+访问 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)并贴出它们，
+也许有人能够帮到你。
 
 # 修改了哪些 μTorrent 配置
 - 全局
@@ -159,7 +177,8 @@ X:\uTorrent
     **ipfilter.enable**，启用/刷新 ipfilter。  
     `True` 启动时、添加屏蔽时
 
-    **webui.allow_pairing**，配对后可修改更多配置，μTorrent 会弹出配对请求窗口，请仔细确认。  
+    **webui.allow_pairing**，配对后可修改更多配置，μTorrent 会弹出配对请求窗口，
+    请仔细确认。  
     `True` 修改广告配置前  
     `False` 修改完成后禁用，也可以使用参数 `-O` 或 `--no-close-pairing` 不禁用
 
@@ -170,11 +189,13 @@ X:\uTorrent
     `True` 启动时，需使用参数 `-C` 或 `--resolve-country`，无需每次都使用
 
     **其它广告配置**，部分配置的修改需要配对。  
-    具体值参见源代码的 `ANTI_ADS_SETTINGS` 部分，启动时，统一在配对后修改，需使用参数 `-A` 或 `--remove-ads`，无需每次都使用
+    具体值参见源代码的 `ANTI_ADS_SETTINGS` 部分，启动时，统一在配对后修改，需使用
+    参数 `-A` 或 `--remove-ads`，无需每次都使用
 
 - Torrent
 
-    **ulrate**，对于旧的、健康度差的 Torrent (以剩余完成时间计，少于 10 GiB/天)，限制其上传速度有助于完成下载，顺带可提高读取缓存命中。  
+    **ulrate**，对于旧的、健康度差的 Torrent (以剩余完成时间计，少于 10 GiB/天)，
+    限制其上传速度有助于完成下载，顺带可提高读取缓存命中。  
     `1048576` 下载大小大于 1 GiB，限制 1 MiB/s  
     `524288` 下载大小大于 10 GiB，限制 512 KiB/s
 

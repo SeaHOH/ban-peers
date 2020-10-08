@@ -2,18 +2,31 @@
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
-Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu, QQDownload, Offline download servers, other infamous leech clients, and BT players, fake clients, who reported fake progress, the fact in serious leech.
+Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via
+Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu,
+QQDownload, Offline download servers, other infamous leech clients, and BT
+players, fake clients, who reported fake progress, the fact in serious leech.
 
-Execute checking per 10 seconds, the banned time can be specified by the start-up parameters, default is 12 hours. In some cases, temporary banned for 1 hour if the torrent is seeding. Also can temporary banned peers which refused upload 10 minutes in downloading torrents if AVAILABILITY greater than 10. At the same time, this script will not broke the existing IP ranges (non-single IP) in ipfilter, they will be stored as-is.
+Execute checking per 10 seconds, the banned time can be specified by the start-up
+parameters, default is 12 hours. In some cases, temporary banned for 1 hour if
+the torrent is seeding. Also can temporary banned peers which refused upload
+10 minutes in downloading torrents if AVAILABILITY greater than 10. At the same
+time, this script will not broke the existing IP ranges (non-single IP) in
+ipfilter, they will be stored as-is.
 
-[A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via a translator. e.g. translate.google.com
+[A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of
+μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via
+a translator. e.g. translate.google.com
 
-Resist leech strongly, this is our own rights. If you feels Ban-Peers a good work, please recommend it to your friends, Thanks.
+Resist leech strongly, this is our own rights. If you feels Ban-Peers a good
+work, please recommend it to your friends, Thanks.
 
 # Notices
 - Does not work in old versions of μTorrent which did not provided API `getpeers`.
-- **Please use this script in local network**, μTorrent Web API does not support HTTPS connections, it is not safe.
-- I took preventive measures, if you stiil found a normal peer has been banned, please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
+- **Please use this script in local network**, μTorrent Web API does not
+  support HTTPS connections, it is not safe.
+- I took preventive measures, if you stiil found a normal peer has been banned,
+  please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
 
 # Installation
 Install from 
@@ -23,17 +36,29 @@ Install from
 
     pip3 install ban-peers
 
-Or download and Install from source code
+Or download and Install from source code, this will install as egg archive
 
     python setup.py install
 
+Or download and package into .pyz (Zip App), support three arguments of zipapp
+module (output/python/compress)
+
+    python setup.py bdist_pyz -compress
+
+    python setup.py bdist_pyz -compress -output ban_peers -python python38
+
 # Compatibility
 - Python >= 3.7
+- Zip safe
+- Support call with `python -m`
+- Support I18N，welcome [helps localization](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
 # Usage
-First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for specified ipfilter.dat file.
+First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for
+specified ipfilter.dat file.
 
-Setting file ipfilter.dat, it is generally located in the path corresponding to the following cases.
+Setting file ipfilter.dat, it is generally located in the path corresponding to
+the following cases.
 ```
 Mac:
         ~/Library/Application Support/uTorrent
@@ -63,7 +88,7 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.9.0
+Welcome using Ban-Peers 0.9.1
 
 Usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
                  [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
@@ -118,7 +143,7 @@ Optional Arguments:
 
 ```markdown
 $ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.9.0
+Welcome using Ban-Peers 0.9.1
 19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
 19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
@@ -132,7 +157,7 @@ or
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.9.0
+Welcome using Ban-Peers 0.9.1
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
@@ -153,33 +178,44 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 - Proceed: just proceed checking.
 
 # Got troubles/ideas
-Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post them, maybe someone can help you.
+Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post
+them, maybe someone can help you.
 
 # What μTorrent settings should have been modified
 - Global
 
-    **bt.use_rangeblock**, using this tool, build-in range block should be disabled (by hash error).  
+    **bt.use_rangeblock**, using this tool, build-in range block (by hash error)
+    should be disabled.  
     `False` when start-up
 
     **ipfilter.enable**, enable/flush ipfilter.  
     `True` when start-up, adding banned
 
-    **webui.allow_pairing**, modify more settings have to got pairing, μTorrent will show a pop-up of pairing request, please confirm carefully.  
+    **webui.allow_pairing**, modify more settings have to got pairing, μTorrent
+                             will show a pop-up of pairing request, please
+                             confirm carefully.  
     `True` before modify ads settings  
-    `False` after modify ads settings, can also use parameters `-O` or `--no-close-pairing` to do not disable it
+    `False` after modify ads settings, can also use parameters `-O` or
+            `--no-close-pairing` to do not disable it
 
-    **gui.show_plus_upsell_nodes**, μTorrent sidebar upgrade tips will be reset at start-up.  
+    **gui.show_plus_upsell_nodes**, μTorrent sidebar upgrade tips will be reset
+                                    at start-up.  
     `True` when start-up, μTorrent re-started
 
     **peer.resolve_country, resolve_peerips**, resolve country code of peer IPs.  
-    `True` when start-up，need to use parameters `-C` or `--resolve-country`, not every time
+    `True` when start-up，need to use parameters `-C` or `--resolve-country`,
+           not every time
 
     **Other ads settings**, modify some settings have to got pairing.  
-    For specific values see the part of `ANTI_ADS_SETTINGS` in source code, when start-up, modify all settings at once after got pairing, need to use parameters `-A` or `--remove-ads`, not every time
+    For specific values see the part of `ANTI_ADS_SETTINGS` in source code, when
+    start-up, modify all settings at once after got pairing, need to use
+    parameters `-A` or `--remove-ads`, not every time
 
 - Torrent
 
-    **ulrate**, for older/weaker Torrents (in terms of E.T.A, less than 10 GiB/day), limit its upload rate helps complete download, and increase read cache hits in passing.  
+    **ulrate**, for older/weaker Torrents (in terms of E.T.A, less than
+                10 GiB/day), limit its upload rate helps complete download, and
+                increase read cache hits in passing.  
     `1048576` download size less than 1 GiB, limit to 1 MiB/s  
     `524288` download size less than 10 GiB, limit to 512 KiB/s
 

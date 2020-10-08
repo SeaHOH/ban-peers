@@ -27,6 +27,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 bdist.bat
+xgettext.bat
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -54,7 +55,6 @@ coverage.xml
 
 # Translations
 *.mo
-*.pot
 
 # Django stuff:
 *.log

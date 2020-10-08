@@ -1,0 +1,175 @@
+# Chinese translations for argparse package
+# argparse 软件包的简体中文翻译.
+# Copyright (C) 2020 Steven J. Bethard
+# This file is distributed under the same license as the argparse package.
+# SeaHOH <seahoh@gmail.com>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: argparse 1.1\n"
+"Report-Msgid-Bugs-To: seahoh@gmail.com\n"
+"POT-Creation-Date: 2020-10-06 20:33+0800\n"
+"PO-Revision-Date: 2020-10-06 20:47+0800\n"
+"Last-Translator: SeaHOH <seahoh@gmail.com>\n"
+"Language-Team: Chinese (simplified)\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: argparse.py:296
+msgid "usage: "
+msgstr "用 法: "
+
+#: argparse.py:854
+msgid ".__call__() not defined"
+msgstr ".__call__() 未定义"
+
+#: argparse.py:1197
+#, python-format
+msgid "unknown parser %(parser_name)r (choices: %(choices)s)"
+msgstr "未知的分析器 %(parser_name)r (可选: %(choices)s)"
+
+#: argparse.py:1257
+#, python-format
+msgid "argument \"-\" with mode %r"
+msgstr "为参数 \"-\" 指定了模式 %r"
+
+# py37
+#: argparse.py:1210
+#, python-format
+msgid "can't open '%s': %s"
+msgstr "无法打开 '%s': %s"
+
+#: argparse.py:1266
+#, python-format
+msgid "can't open '%(filename)s': %(error)s"
+msgstr "无法打开 '%(filename)s': %(error)s"
+
+#: argparse.py:1475
+#, python-format
+msgid "cannot merge actions - two groups are named %r"
+msgstr "不能合并事件 - 有两组的名称都是 %r"
+
+#: argparse.py:1513
+msgid "'required' is an invalid argument for positionals"
+msgstr "'required' 是一个无效的位置参数名称"
+
+#: argparse.py:1535
+#, python-format
+msgid ""
+"invalid option string %(option)r: must start with a character "
+"%(prefix_chars)r"
+msgstr "无效的选项字符串 %(option)r: 必须以 %(prefix_chars)r 中的一个字符开头"
+
+#: argparse.py:1553
+#, python-format
+msgid "dest= is required for options like %r"
+msgstr "对于选项如 %r，dest= 是必需的"
+
+#: argparse.py:1570
+#, python-format
+msgid "invalid conflict_resolution value: %r"
+msgstr "无效的用以冲突处理的值: %r"
+
+#: argparse.py:1588
+#, python-format
+msgid "conflicting option string: %s"
+msgid_plural "conflicting option strings: %s"
+msgstr[0] "冲突的选项字符串: %s"
+msgstr[1] ""
+
+#: argparse.py:1654
+msgid "mutually exclusive arguments must be optional"
+msgstr "互斥参数必须是可选参数"
+
+#: argparse.py:1721
+msgid "positional arguments"
+msgstr "位置参数"
+
+#: argparse.py:1722
+msgid "optional arguments"
+msgstr "可选参数"
+
+#: argparse.py:1737
+msgid "show this help message and exit"
+msgstr "显示此帮助信息并退出"
+
+#: argparse.py:1768
+msgid "cannot have multiple subparser arguments"
+msgstr "不能包含多个子分析器参数"
+
+#: argparse.py:1820 argparse.py:2331
+#, python-format
+msgid "unrecognized arguments: %s"
+msgstr "无法识别的参数: %s"
+
+#: argparse.py:1921
+#, python-format
+msgid "not allowed with argument %s"
+msgstr "不允许和参数 %s 一起使用"
+
+#: argparse.py:1967 argparse.py:1981
+#, python-format
+msgid "ignored explicit argument %r"
+msgstr "参数 %r 被忽略"
+
+#: argparse.py:2088
+#, python-format
+msgid "the following arguments are required: %s"
+msgstr "这些参数是必需的: %s"
+
+#: argparse.py:2103
+#, python-format
+msgid "one of the arguments %s is required"
+msgstr "%s 这些参数至少一个是必需的"
+
+#: argparse.py:2146
+msgid "expected one argument"
+msgstr "预计有一个参数"
+
+#: argparse.py:2147
+msgid "expected at most one argument"
+msgstr "预计最多有一个参数"
+
+#: argparse.py:2148
+msgid "expected at least one argument"
+msgstr "预计最少有一个参数"
+
+#: argparse.py:2152
+#, python-format
+msgid "expected %s argument"
+msgid_plural "expected %s arguments"
+msgstr[0] "预计有 %s 个参数"
+msgstr[1] ""
+
+#: argparse.py:2210
+#, python-format
+msgid "ambiguous option: %(option)s could match %(matches)s"
+msgstr "不确定的选项: %(option)s 可以匹配 %(matches)s"
+
+#: argparse.py:2274
+#, python-format
+msgid "unexpected option string: %s"
+msgstr "未预计的选项字符串: %s"
+
+#: argparse.py:2471
+#, python-format
+msgid "%r is not callable"
+msgstr "%r 不可调用"
+
+#: argparse.py:2488
+#, python-format
+msgid "invalid %(type)s value: %(value)r"
+msgstr "无效的 %(type)s 值: %(value)r"
+
+#: argparse.py:2499
+#, python-format
+msgid "invalid choice: %(value)r (choose from %(choices)s)"
+msgstr "无效的选择: %(value)r (请从这里选择 %(choices)s)"
+
+#: argparse.py:2575
+#, python-format
+msgid "%(prog)s: error: %(message)s\n"
+msgstr "%(prog)s: 错误: %(message)s\n"

@@ -1,0 +1,306 @@
+# Chinese translations for Ban-Peers package
+# Ban-Peers 软件包的简体中文翻译.
+# Copyright (C) 2020 SeaHOH
+# This file is distributed under the same license as the Ban-Peers package.
+# SeaHOH <seahoh@gmail.com>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Ban-Peers 0.9.1\n"
+"Report-Msgid-Bugs-To: seahoh@gmail.com\n"
+"POT-Creation-Date: 2020-10-06 19:50+0800\n"
+"PO-Revision-Date: 2020-10-06 20:03+0800\n"
+"Last-Translator: SeaHOH <seahoh@gmail.com>\n"
+"Language-Team: Chinese (simplified)\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ban_peers/__init__.py:7
+msgid ""
+"Checking & banning BitTorrent leech peers via Web API, remove ads, working "
+"for\n"
+"uTorrent.\n"
+msgstr "通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。"
+
+#: ban_peers/__init__.py:444
+msgid "Please input uTorrent settings folder path or ipfilter file path:\n"
+msgstr "请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:\n"
+
+#: ban_peers/__init__.py:451
+#, python-format
+msgid "Unable to connect %(host)s:%(port)d"
+msgstr "无法连接 %(host)s:%(port)d"
+
+#: ban_peers/__init__.py:555
+msgid "Please input WebUI username: "
+msgstr "请输入 WebUI 用户名: "
+
+#: ban_peers/__init__.py:556
+msgid "Please input WebUI password: "
+msgstr "请输入 WebUI 密码: "
+
+#: ban_peers/__init__.py:621 ban_peers/__init__.py:1113
+#, python-format
+msgid "Set uTorrent setting %(name)r to %(value)s"
+msgstr "设定 uTorrent 配置 %(name)r 到 %(value)s"
+
+#: ban_peers/__init__.py:638
+#, python-format
+msgid "[%(hash)s] set property %(name)r to %(value)s"
+msgstr "[%(hash)s] 设定属性 %(name)r 到 %(value)s"
+
+#: ban_peers/__init__.py:674
+#, python-format
+msgid ""
+"Banned %(ip)s:%(port)d@%(country)s: %(reason)s, downloaded: %(dlsize)s, "
+"uploaded: %(ulsize)s"
+msgstr ""
+"已屏蔽 %(ip)s:%(port)d@%(country)s: %(reason)s, 已下载: %(dlsize)s, "
+"已上传: %(ulsize)s"
+
+#: ban_peers/__init__.py:687
+#, python-format
+msgid "[%(hash)s][%(torrent)s] found %(message)s: [%(client)s]@%(ip&port)s"
+msgstr "[%(hash)s][%(torrent)s] 发现%(message)s: [%(client)s]@%(ip&port)s"
+
+#: ban_peers/__init__.py:723
+#, python-format
+msgid "[%(hash)s][%(torrent)s] increase additional check threshold"
+msgstr "[%(hash)s][%(torrent)s] 提高附加检测阀值"
+
+#: ban_peers/__init__.py:798
+#, python-format
+msgid "report fack progress [%(progress).1f%%]"
+msgstr "汇报虚假进度 [%(progress).1f%%]"
+
+#: ban_peers/__init__.py:809
+msgid "offline download server"
+msgstr "离线下载服务器"
+
+#: ban_peers/__init__.py:814
+msgid "XunLei"
+msgstr "迅雷"
+
+#: ban_peers/__init__.py:829
+msgid "player"
+msgstr "播放器"
+
+#: ban_peers/__init__.py:842
+msgid "fack client"
+msgstr "假冒客户端"
+
+#: ban_peers/__init__.py:853
+msgid "leecher client"
+msgstr "吸血客户端"
+
+#: ban_peers/__init__.py:896
+msgid "highly suspected of leecher"
+msgstr "高度疑似吸血"
+
+#: ban_peers/__init__.py:914
+#, python-format
+msgid "refused upload [%(availability).3f%%]"
+msgstr "拒绝上传 [%(availability).3f%%]"
+
+#: ban_peers/__init__.py:921
+msgid "unknown client"
+msgstr "未知客户端"
+
+#: ban_peers/__init__.py:935
+#, python-format
+msgid ""
+"Statis: %(ipsc)d IPs, %(torrentsuc)d/%(torrentsc)d Torrents, D: %(dlsize)s, "
+"U: %(ulsize)s"
+msgstr ""
+"统计: %(ipsc)d IPs, %(torrentsuc)d/%(torrentsc)d Torrents, 已下载: %(dlsize)s, "
+"已上传: %(ulsize)s"
+
+#: ban_peers/__init__.py:957
+#, python-format
+msgid "Auto-banning script %(state)s running"
+msgstr "自动屏蔽脚本%(state)s运行"
+
+#: ban_peers/__init__.py:967
+msgid "start"
+msgstr "开始"
+
+#: ban_peers/__init__.py:979
+msgid "uTorrent has disconnected"
+msgstr "uTorrent 已断开连接"
+
+#: ban_peers/__init__.py:987
+#, python-format
+msgid "Unable to connect WebUI: %(url)s"
+msgstr "无法连接 WebUI: %(url)s"
+
+#: ban_peers/__init__.py:992
+#, python-format
+msgid "Error occurred: %(error)s, %(url)s"
+msgstr "发生错误: %(error)s, %(url)s"
+
+#: ban_peers/__init__.py:995 ban_peers/__init__.py:1133
+#, python-format
+msgid "%(logheader)s Error occurred: %(error)s"
+msgstr "%(logheader)s 发生错误: %(error)s"
+
+#: ban_peers/__init__.py:999
+msgid "uTorrent has reconnected"
+msgstr "uTorrent 已重新连接"
+
+#: ban_peers/__init__.py:1008
+msgid "Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed"
+msgstr "请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复"
+
+#: ban_peers/__init__.py:1011
+msgid "DISCONNECTED"
+msgstr "已断开连接"
+
+#: ban_peers/__init__.py:1018 ban_peers/__init__.py:1023
+msgid "quit"
+msgstr "退出"
+
+#: ban_peers/__init__.py:1025
+msgid "stop"
+msgstr "停止"
+
+#: ban_peers/__init__.py:1031
+msgid "restart"
+msgstr "重新开始"
+
+#: ban_peers/__init__.py:1036
+msgid "pause"
+msgstr "暂停"
+
+#: ban_peers/__init__.py:1038
+msgid "proceed"
+msgstr "恢复"
+
+#: ban_peers/__init__.py:1078
+msgid "Pairing request has been rejected!"
+msgstr "配对请求已被拒绝!"
+
+#: ban_peers/__init__.py:1110
+#, python-format
+msgid "set_setting(%(name)r, %(value)s) fail: %(error)s"
+msgstr "set_setting(%(name)r, %(value)s) 失败: %(error)s"
+
+#: ban_peers/__init__.py:1308
+msgid "IPFILTER-PATH"
+msgstr "IP屏蔽配置路径"
+
+#: ban_peers/__init__.py:1310
+msgid ""
+"Path of ipfilter dir/file, wait input if empty. IMPORTANT NOTICE: must be "
+"the uTorrent settings path!"
+msgstr ""
+"ipfilter 目录或文件路径，留空将等待输入。"
+"重要提示: 必须是 uTorrent 配置使用的路径!"
+
+#: ban_peers/__init__.py:1313
+msgid "IP|DOMAIN"
+msgstr "IP|域名"
+
+#: ban_peers/__init__.py:1315
+#, python-format
+msgid "WebUI host, default %(host)s"
+msgstr "网页界面的主机，默认 %(host)s"
+
+#: ban_peers/__init__.py:1317
+msgid "PORT"
+msgstr "端口"
+
+#: ban_peers/__init__.py:1319
+#, python-format
+msgid "WebUI port, default %(port)s"
+msgstr "网页界面的端口，默认 %(port)s"
+
+#: ban_peers/__init__.py:1321
+msgid "USERNAME:PASSWORD"
+msgstr "用户名:密码"
+
+#: ban_peers/__init__.py:1323
+msgid "WebUI authorization, wait input if required"
+msgstr "网页界面的授权，如果需要将等待输入"
+
+#: ban_peers/__init__.py:1325
+msgid "HOURS"
+msgstr "小时"
+
+#: ban_peers/__init__.py:1327
+#, python-format
+msgid "Ban expire time for peers, default %(time)s hours"
+msgstr "屏蔽对端的过期时间，默认 %(time)s 小时"
+
+#: ban_peers/__init__.py:1330
+msgid "MINUTES"
+msgstr "分钟"
+
+#: ban_peers/__init__.py:1332
+#, python-format
+msgid ""
+"How much time to keep connecting before temporary banned refused upload "
+"peers, at least 5 minutes, default %(time)s minutes"
+msgstr "临时屏蔽拒绝上传的对端前保持连接的时间，最少 5 分钟，默认 %(time)s 分钟"
+
+#: ban_peers/__init__.py:1337
+msgid "FORMAT"
+msgstr "格式"
+
+#: ban_peers/__init__.py:1339
+#, python-format
+msgid "Format of log header, see time.strftime, default %(time)s"
+msgstr "日志头格式，参见 time.strftime，默认 %(time)s"
+
+#: ban_peers/__init__.py:1345
+msgid "Set uTorrent to resolved peer's country code at start-up"
+msgstr "启动时，设置 uTorrent 解析对端国家代码"
+
+#: ban_peers/__init__.py:1350
+msgid "Banned XunLei directly, no more checking"
+msgstr "直接屏蔽迅雷，不进行更多的检查"
+
+#: ban_peers/__init__.py:1354
+msgid "Don't checking fake progress"
+msgstr "不进行虚假进度检查"
+
+#: ban_peers/__init__.py:1358
+msgid "Don't checking serious leech, except anonymous peers"
+msgstr "不进行严重吸血检查，匿名对端除外"
+
+#: ban_peers/__init__.py:1362
+msgid ""
+"Don't checking refused upload, this checking is useful to connect potential "
+"active peers"
+msgstr "不进行拒绝上传检查，此检查有助于连接潜在的活跃对端"
+
+#: ban_peers/__init__.py:1367
+msgid "Enable checking for private torrents"
+msgstr "启用对私有种子的检查"
+
+#: ban_peers/__init__.py:1371
+msgid "Logging unknown clients"
+msgstr "将未知客户端记入日志"
+
+#: ban_peers/__init__.py:1375
+msgid ""
+"Remove ads via set Advanced Settings, only working for localhost, and to "
+"fail in older uTorrent"
+msgstr "通过高级设置移除广告，仅工作于本地主机，也无法工作于较旧版本的 uTorrent"
+
+#: ban_peers/__init__.py:1380
+msgid "Don't turn off Web Pairing setting after"
+msgstr "移除广告后，不关闭网络配对配置项"
+
+#: ban_peers/__init__.py:1384
+msgid "Show this help message and exit"
+msgstr "显示此帮助信息并退出"
+
+#: ban_peers/__init__.py:1388
+msgid "Show version and exit"
+msgstr "显示版本信息并退出"
+
+#: ban_peers/__init__.py:1394
+msgid "Welcome using"
+msgstr "欢迎使用"

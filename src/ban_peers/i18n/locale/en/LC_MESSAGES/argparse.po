@@ -1,0 +1,35 @@
+# English translations for argparse package.
+# The origin language is also English, that just make some title style.
+# Copyright (C) 2020 Steven J. Bethard
+# This file is distributed under the same license as the argparse package.
+# , 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: argparse 1.1\n"
+"Report-Msgid-Bugs-To: seahoh@gmail.com\n"
+"POT-Creation-Date: 2020-10-06 20:33+0800\n"
+"PO-Revision-Date: 2020-10-06 20:40+0800\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: argparse.py:296
+msgid "usage: "
+msgstr "Usage: "
+
+#: argparse.py:1721
+msgid "positional arguments"
+msgstr "Positional Arguments"
+
+#: argparse.py:1722
+msgid "optional arguments"
+msgstr "Optional Arguments"
+
+#: argparse.py:1737
+msgid "show this help message and exit"
+msgstr "Show this help message and exit"
