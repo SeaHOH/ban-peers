@@ -112,6 +112,7 @@ try:
 except NameError:
     bdist_wheel = None
 
+
 setup(
     name=metadata['__app_name__'],
     version=metadata['__version__'],
@@ -119,7 +120,8 @@ setup(
     author_email=metadata['__email__'],
     url=metadata['__webpage__'],
     license=metadata['__license__'],
-    description=metadata['__doc__'].replace('uTorrent', 'μTorrent').replace('\n', ''),
+    description=metadata['__doc__'].replace('uTorrent', 'μTorrent') \
+                                   .replace('\n', ' ').strip(),
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
     keywords='BitTorrent uTorrent anti-leech ban block XunLei anti-ads',

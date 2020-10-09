@@ -442,7 +442,7 @@ class List2Attr:
 class UTorrentWebAPI:
     def __init__(self,
                 ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
-                username:Optional[str]='', password:Optional[str]='',
+                username:Optional[str]=None, password:Optional[str]=None,
                 expire:int=3600*12, time_allowed_refuse:int=600,
                 log_header_fmt:str='%H:%M:%S', xunlei_reprieve:bool=True,
                 check_fake_progress:bool=True, check_serious_leech:bool=True,
@@ -463,7 +463,7 @@ class UTorrentWebAPI:
         self._req = Request(self._url_root)
         self.set_authorization(username, password)
         self.expire = expire
-        self.time_allowed_refuse = min(time_allowed_refuse, 300)
+        self.time_allowed_refuse = max(time_allowed_refuse, 300)
         self.xunlei_reprieve = xunlei_reprieve
         self.check_fake_progress = check_fake_progress
         self.check_serious_leech = check_serious_leech
@@ -482,8 +482,8 @@ class UTorrentWebAPI:
                 [str, Dict[str, Union[float, Tuple[int, int, Optional[float]]]]] \
                 = collections.defaultdict(dict)
         self._statistics_uploaded:MutableMapping \
-                [str, Dict[str, Union[float, Tuple[int, int, int, Optional[float]]]]] \
-                 = collections.defaultdict(dict)
+                [str, Dict[str, Tuple[int, int, int, Optional[float]]]] \
+                = collections.defaultdict(dict)
         self._statistics_refused:MutableMapping \
                 [str, Dict[str, Optional[float]]] = collections.defaultdict(dict)
         self._statistics_str = ''
@@ -784,8 +784,6 @@ class UTorrentWebAPI:
                 except KeyError:
                     last_uploaded, last_downloaded, up_ot, down_ot = \
                             peer.uploaded, peer.downloaded, 0, 0
-                assert isinstance(up_ot, int)
-                assert isinstance(down_ot, int)
                 if last_uploaded > peer.uploaded + _2g:
                     up_ot += 1
                 if last_downloaded > peer.downloaded + _2g:
@@ -906,9 +904,8 @@ class UTorrentWebAPI:
                 ### End check client name
                 if self.check_serious_leech or anonymous:
                     try:
-                        _su = self._statistics_uploaded[hash][ip_port]
-                        assert isinstance(_su, tuple)
-                        luploaded, suploaded, _suploaded, t = _su
+                        luploaded, suploaded, _suploaded, t = \
+                                self._statistics_uploaded[hash][ip_port]
                     except KeyError:
                         luploaded = suploaded = _suploaded = 0
                         t = None
@@ -957,7 +954,7 @@ class UTorrentWebAPI:
                             t = ct
                     elif allow_banned_refused_upload and \
                             ct - t > self.time_allowed_refuse:
-                        log(_('refused upload [%(availability).3f%%]')
+                        log(_('refused upload [%(availability).3f]')
                             % {'availability': torrent.availability})
                         reasons.append('Refused')
                         allow_banned_refused_upload = False  # One peer a loop

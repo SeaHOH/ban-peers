@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ban-Peers 0.9.1\n"
 "Report-Msgid-Bugs-To: seahoh@gmail.com\n"
-"POT-Creation-Date: 2020-10-06 19:50+0800\n"
+"POT-Creation-Date: 2020-10-08 23:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,7 +99,7 @@ msgstr ""
 
 #: ban_peers/__init__.py:960
 #, python-format
-msgid "refused upload [%(availability).3f%%]"
+msgid "refused upload [%(availability).3f]"
 msgstr ""
 
 #: ban_peers/__init__.py:967
