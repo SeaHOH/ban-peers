@@ -29,7 +29,7 @@ msgstr ".__call__() 未定义"
 #: argparse.py:1197
 #, python-format
 msgid "unknown parser %(parser_name)r (choices: %(choices)s)"
-msgstr "未知的分析器 %(parser_name)r (可选: %(choices)s)"
+msgstr "未知的解析器 %(parser_name)r (可选: %(choices)s)"
 
 #: argparse.py:1257
 #, python-format
@@ -98,7 +98,7 @@ msgstr "显示此帮助信息并退出"
 
 #: argparse.py:1768
 msgid "cannot have multiple subparser arguments"
-msgstr "不能包含多个子分析器参数"
+msgstr "不能包含多个子解析器参数"
 
 #: argparse.py:1820 argparse.py:2331
 #, python-format

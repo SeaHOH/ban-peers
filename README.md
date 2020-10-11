@@ -25,6 +25,8 @@ work, please recommend it to your friends, Thanks.
 - Does not work in old versions of μTorrent which did not provided API `getpeers`.
 - **Please use this script in local network**, μTorrent Web API does not
   support HTTPS connections, it is not safe.
+- If you can not accept read/write the ipfilter.dat file frequently, it can be
+  soft/symbolic link to a RAM disk.
 - I took preventive measures, if you stiil found a normal peer has been banned,
   please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
 
@@ -88,19 +90,21 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.9.1
+Welcome using Ban-Peers 0.9.2
 
-Usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
-                 [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
-                 [-A] [-O] [-h] [-v]
-                 [IPFILTER-PATH]
+usage: ban_peers.pyz [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
+                     [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R]
+                     [-U] [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h]
+                     [-v]
+                     [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 
 Positional Arguments:
-    IPFILTER-PATH   Path of ipfilter dir/file, wait input if empty. IMPORTANT
-                    NOTICE: must be the uTorrent settings path!
+    IPFILTER-PATH   Path of ipfilter dir/file, will try load from config file
+                    or wait input if empty. IMPORTANT NOTICE: must be the
+                    uTorrent settings path!
 
 Optional Arguments:
     -H IP|DOMAIN, --host IP|DOMAIN
@@ -110,11 +114,11 @@ Optional Arguments:
     -a USERNAME:PASSWORD, --authorization USERNAME:PASSWORD
                     WebUI authorization, wait input if required
     -e HOURS, --expire HOURS
-                    Ban expire time for peers, default 12 HOURS
+                    Ban expire time for peers, default 12 hours
     -t MINUTES, --time-allowed-refuse MINUTES
                     How much time to keep connecting before temporary banned
-                    refused upload peers, at least 5 MINUTES, default 10
-                    MINUTES
+                    refused upload peers, at least 5 minutes, default 10
+                    minutes
     -f FORMAT, --log-header FORMAT
                     Format of log header, see time.strftime, default %H:%M:%S
     -C, --resolve-country
@@ -136,28 +140,25 @@ Optional Arguments:
                     Remove ads via set Advanced Settings, only working for
                     localhost, and to fail in older uTorrent
     -O, --no-close-pairing
-                    Don't turn off Web Pairing setting after remove ads
+                    Don't turn off Web Pairing setting after
+    -s [CONFIG-FILE], --save-config [CONFIG-FILE]
+                    Save current arguments to a config file except "--remove-
+                    ads", "--help" and "--version". Save to default location
+                    "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf" if empty input
+    -l [CONFIG-FILE], --load-config [CONFIG-FILE]
+                    Load arguments from a config file, will not overlaid the
+                    inputted arguments. Load from current directory (use
+                    conf/ini/cfg as extension name) or default location if
+                    empty input
     -h, --help      Show this help message and exit
     -v, --version   Show version and exit
 ```
 
 ```markdown
-$ ban_peers -p 12345 -a username:password /var/lib/utserver
-Welcome using Ban-Peers 0.9.1
-19:44:33 Set uTorrent setting 'webui.allow_pairing' to True
-19:44:35 Set uTorrent setting 'gui.show_plus_upsell_nodes' to False  **_Remove upsell tip in the sidebar_**
-19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
-19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
-19:44:35 Set uTorrent setting 'ipfilter.enable' to True
-19:44:35 uTorrent auto-banning script start running
-Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
-```
-
-or
-
-```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.9.1
+Welcome using Ban-Peers 0.9.2
+No ipfilter has be inputted, try load from config file
+Load ipfilter from config file fail, found nothing
 Please input uTorrent settings folder path or ipfilter file path:
 /var/lib/utserver
 Please input WebUI username: username
@@ -167,8 +168,29 @@ Please input WebUI password: password  **_No cover_**
 19:44:35 Set uTorrent setting 'webui.allow_pairing' to False  **_disallow pairing_**
 19:44:35 Set uTorrent setting 'bt.use_rangeblock' to False  **_Won't restore after quit_**
 19:44:35 Set uTorrent setting 'ipfilter.enable' to True
-19:44:35 uTorrent auto-banning script start running
+19:44:35 Auto-banning script start running
 Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
+19:44:36 Auto-banning script quit running
+...
+
+...
+$ ban_peers -p 12345 -a username:password /var/lib/utserver --save-config
+Welcome using Ban-Peers 0.9.2
+Start saving config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
+Save argument "ipfilter = /var/lib/utserver"
+Save argument "port = 12345"
+Save argument "authorization = username:password"
+...
+
+...
+$ ban-peers -p 54321
+Welcome using Ban-Peers 0.9.2
+No ipfilter has be inputted, try load from config file
+Start loading config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
+Load argument "ipfilter = /var/lib/utserver"
+**_Doesn't load inputted argument port_**
+Load argument "authorization = username:password"
+...
 ```
 
 - Quit: exit the script.

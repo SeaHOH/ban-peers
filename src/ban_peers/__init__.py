@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -397,11 +397,70 @@ class List2Attr:
             'RELEVANCE': 21
         }
     }
-    _32bit1 = ~(-1 << 32)
-    _32bit_signed_mini = -1 << 31
+    
+    hash:str
+    status:int
+    name:str
+    size:int
+    progress:int
+    downloaded:int
+    uploaded:int
+    ratio:int
+    upspeed:int
+    downspeed:int
+    eta:int
+    label:str
+    peers_connected:int
+    peers_swarm:int
+    seeds_connected:int
+    seeds_swarm:int
+    availability:float
+    queue_position:int
+    remaining:int
+    download_url:str
+    rss_feed_url:str
+    status_message:str
+    stream_id:str
+    date_added:int
+    date_completed:int
+    app_update_url:str
+    save_path:str
+
+    priority:int
+    first_piece:int
+    num_pieces:int
+    streamable:int
+    encoded_rate:int
+    duration:int
+    width:int
+    height:int
+    stream_eta:int
+    streamability:int
+
+    country:str
+    ip:str
+    revdns:str
+    utp:int
+    port:int
+    client:str
+    flags:str
+    reqs_out:str
+    reqs_in:str
+    waited:int
+    hasherr:int
+    peerdl:int
+    maxup:int
+    maxdown:int
+    queued:int
+    inactive:int
+    relevance:int
+
     _cache:dict
     _list:list
     _type:dict
+
+    _32bit1 = ~(-1 << 32)
+    _32bit_signed_mini = -1 << 31
 
     def __init__(self, list:List[Union[int, str]], type:str) -> None:
         object.__setattr__(self, '_cache', {})
@@ -426,7 +485,7 @@ class List2Attr:
         self._cache[name] = value
         return value
 
-    def __setattr__(self, name:str, value:Union[int, str]) -> None:
+    def __setattr__(self, name:str, value:Union[int, float, str]) -> None:
         name = name.upper()
         self._list[self._type[name]]
         if name == 'IP' and isinstance(value, str) and value[:1] == '[':
@@ -456,8 +515,7 @@ class UTorrentWebAPI:
         try:
             socket().connect((host, port))
         except:
-            raise ValueError(_('Unable to connect %(host)s:%(port)d')
-                             % {'host': host, 'port': port})
+            raise ValueError(_('Unable to connect %(host)s:%(port)d') % vars())
         self.file_ipfilter = ipfilter
         self._url_root = f'http://{host}:{port}/gui/'
         self._req = Request(self._url_root)
@@ -637,7 +695,7 @@ class UTorrentWebAPI:
             self.log(_('Set uTorrent setting %(name)r to %(value)s')
                      % {'name': s, 'value': v})
 
-    def get_props(self, hash:str) -> Dict:
+    def get_props(self, hash:str) -> dict:
         result = json.load(self.request(params={
             'action': 'getprops',
             'hash': hash
@@ -675,9 +733,6 @@ class UTorrentWebAPI:
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
         ip = peer.ip
-        assert isinstance(ip, str)
-        assert isinstance(peer.downloaded, int)
-        assert isinstance(peer.uploaded, int)
         try:
             d = self._statistics.pop(ip)
         except KeyError:
@@ -714,14 +769,6 @@ class UTorrentWebAPI:
         reasons = []
         ct = time.monotonic()
         for torrent in self.get_torrents():
-            assert isinstance(torrent.hash, str)
-            assert isinstance(torrent.name, str)
-            assert isinstance(torrent.size, int)
-            assert isinstance(torrent.progress, int)
-            assert isinstance(torrent.downloaded, int)
-            assert isinstance(torrent.eta, int)
-            assert isinstance(torrent.availability, float)
-            assert isinstance(torrent.remaining, int)
             size_millesimal = torrent.size // 1000
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
@@ -732,10 +779,8 @@ class UTorrentWebAPI:
             if self.check_fake_progress or self.check_serious_leech:
                 files = list(self.get_files(hash))
                 size_todl = sum(file.size for file in files if file.priority)
-                assert isinstance(size_todl, int)
                 size_todl_tenth = size_todl // 10
                 size_downloaded = sum(file.downloaded for file in files)
-                assert isinstance(size_downloaded, int)
                 size_last_downloaded = torrent.downloaded - size_downloaded
                 time_fp = 60
                 ratio_sl = 10
@@ -760,19 +805,6 @@ class UTorrentWebAPI:
                                        _1m // 2 if size_todl > _10g else _1m)
             allow_banned_refused_upload = torrent.availability > 10
             for peer in self.get_peers(hash):
-                assert isinstance(peer.country, str)
-                assert isinstance(peer.ip, str)
-                assert isinstance(peer.port, int)
-                assert isinstance(peer.client, str)
-                assert isinstance(peer.flags, str)
-                assert isinstance(peer.progress, int)
-                assert isinstance(peer.downspeed, int)
-                assert isinstance(peer.upspeed, int)
-                assert isinstance(peer.waited, int)
-                assert isinstance(peer.uploaded, int)
-                assert isinstance(peer.downloaded, int)
-                assert isinstance(peer.inactive, int)
-                assert isinstance(peer.relevance, int)
                 if peer.ip in self.ipfilter or peer.upspeed < 256 and \
                         peer.progress == peer.relevance == peer.downspeed == 0:
                     continue
@@ -816,7 +848,7 @@ class UTorrentWebAPI:
                         assert isinstance(_sp, tuple)
                         last_progress, last_uploaded, t = _sp
                         fo = None
-                    except (KeyError, TypeError):
+                    except (KeyError, AssertionError):
                         fo = True
                     if fo or peer.progress < last_progress:
                         last_progress = peer.progress
@@ -997,7 +1029,7 @@ class UTorrentWebAPI:
 
     def run(self, pair=None, show_operations:bool=True) -> None:
         def log(state):
-            self.log(_('Auto-banning script %(state)s running') % {'state': state})
+            self.log(_('Auto-banning script %(state)s running') % vars())
 
         if self.running:
             return
@@ -1134,9 +1166,8 @@ class UTorrentPairing:
         self._session = result['session']
 
     def set_setting(self, s:str, v:Union[int, str, bool]) -> None:
-        if self._session is None:
+        while self._session is None:
             self.get_session()
-        assert isinstance(self._session, str)
         while True:
             result = json.load(self.request({
                 'session': self._session,
@@ -1179,9 +1210,10 @@ class UTorrentPairing:
         return True  # Make no Exception would be raised
 
 
-def main(args=None):
+def main(argv=None):
     import inspect
     import argparse
+    from . import config
 
     try:
         tr = translation('argparse')
@@ -1205,8 +1237,9 @@ def main(args=None):
     parser.add_argument('ipfilter', nargs='?',
                         metavar=_('IPFILTER-PATH'),
                         help=_(
-                        'Path of ipfilter dir/file, wait input if empty. '
-                        'IMPORTANT NOTICE: must be the uTorrent settings path!'))
+                        'Path of ipfilter dir/file, will try load from config '
+                        'file or wait input if empty. IMPORTANT NOTICE: must be '
+                        'the uTorrent settings path!'))
     parser.add_argument('-H', '--host', type=str,
                         metavar=_('IP|DOMAIN'),
                         help=_(
@@ -1235,8 +1268,8 @@ def main(args=None):
                         metavar=_('FORMAT'),
                         help=_(
                         'Format of log header, see time.strftime, '
-                        'default %(time)s')
-                        % {'time': kwargs['log_header_fmt'].replace("%", "%%")})
+                        'default %(header)s')
+                        % {'header': kwargs['log_header_fmt'].replace("%", "%%")})
     parser.add_argument('-C', '--resolve-country',
                         action='store_true',
                         help=_(
@@ -1276,6 +1309,26 @@ def main(args=None):
                         action='store_true',
                         help=_(
                         'Don\'t turn off Web Pairing setting after'))
+    cgroup = parser.add_mutually_exclusive_group()
+    cgroup.add_argument('-s', '--save-config', nargs='?', dest='config',
+                        type=config.FileType('w'),
+                        const=config._default_config_file,
+                        metavar=_('CONFIG-FILE'),
+                        help=_(
+                        'Save current arguments to a config file except '
+                        '"--remove-ads", "--help" and "--version". Save to '
+                        'default location "%(config)s" if empty input')
+                        % {'config': config._default_config_file})
+    cgroup.add_argument('-l', '--load-config', nargs='?', dest='config',
+                        type=config.FileType('r'),
+                        const=config.current_dir_config_file() or
+                              config._default_config_file,
+                        metavar=_('CONFIG-FILE'),
+                        help=_(
+                        'Load arguments from a config file, will not overlaid '
+                        'the inputted arguments. Load from current directory '
+                        '(use conf/ini/cfg as extension name) or default '
+                        'location if empty input'))
     parser.add_argument('-h', '--help',
                         action='store_true',
                         help=_(
@@ -1284,7 +1337,7 @@ def main(args=None):
                         action='store_true',
                         help=_(
                         'Show version and exit'))
-    args = parser.parse_args(args)
+    args = parser.parse_args(argv)
 
     if args.version:
         print(__app_name__, __version__)
@@ -1297,8 +1350,36 @@ def main(args=None):
         except ImportError:
             pass
         print()
-        print(parser.format_help())
+        parser.print_help()
         sys.exit()
+
+    def get_logger(action):
+        def log(name, value):
+            action
+            print(_('%(action)s argument "%(name)s = %(value)s"') % vars())
+        return log
+
+    auto_loaded = False
+    if args.ipfilter is None and args.config is None:
+        print(_('No ipfilter has be inputted, try load from config file'))
+        # An automatic try, ignore errors
+        parser.error = lambda m: None
+        try:
+            parser.parse_args(['-l'], args)
+        except TypeError:
+            pass
+        finally:
+            auto_loaded = True
+    if args.config:
+        if args.config.writable():
+            print(_('Start saving config file "%(name)s"') % {'name': args.config.name})
+            config.save(vars(args), args.config, get_logger(_('Save')))
+        else:
+            print(_('Start loading config file "%(name)s"') % {'name': args.config.name})
+            config.load(vars(args), args.config, get_logger(_('Load')))
+        args.config.close()
+    if args.ipfilter is None and auto_loaded:
+        print(_('Load ipfilter from config file fail, found nothing'))
 
     if args.host:
         kwargs['host'] = args.host

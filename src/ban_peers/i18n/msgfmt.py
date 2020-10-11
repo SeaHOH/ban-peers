@@ -130,8 +130,8 @@ class PoSyntaxError(Exception):
         self.content = content
 
     def __str__(self):
-        return ('PO file syntax error: {}\\n'
-                '  File "{}", line {}\\n'
+        return ('PO file syntax error: {}\n'
+                '  File "{}", line {}\n'
                 '    {}').format(self.msg, self.fname, self.lno, self.content)
 
 

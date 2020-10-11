@@ -20,6 +20,7 @@
 # 注意事项
 - 无法在未提供 `getpeers` API 的旧版本 μTorrent 中正常工作。
 - **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
+- 如果无法接受频繁读写 ipfilter.dat 文件，可以将它软链接到内存盘。
 - 虽然已采取一些预防措施，如果你仍然发现有正常的对端被错误屏蔽，
   请反馈到 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
@@ -78,18 +79,18 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.9.1
+欢迎使用 Ban-Peers 0.9.2
 
-用 法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
-                 [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O] [-h]
-                 [-v]
-                 [IP屏蔽配置路径]
+用 法: ban_peers.pyz [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
+                     [-t 分钟] [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
+                     [-A] [-O] [-s [配置文件] | -l [配置文件]] [-h] [-v]
+                     [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 
 位置参数:
-    IP屏蔽配置路径  ipfilter 目录或文件路径，留空将等待输入。重要提示: 必须是
-                    uTorrent 配置使用的路径!
+    IP屏蔽配置路径  ipfilter 目录或文件路径，留空将尝试从配置文件加载，或等待输
+                    入。重要提示: 必须是 uTorrent 配置使用的路径!
 
 可选参数:
     -H IP|域名, --host IP|域名
@@ -124,27 +125,23 @@ ban_peers -h
                     本的 uTorrent
     -O, --no-close-pairing
                     移除广告后，不关闭网络配对配置项
+    -s [配置文件], --save-config [配置文件]
+                    保存当前参数到一个配置文件，不包括 "--remove-ads"、"--help"
+                    和 "--version"，如果输入留空则保存到默认位置 "<你的配置目录>
+                    \BanPeers\ban_peers.conf"
+    -l [配置文件], --load-config [配置文件]
+                    从一个配置文件加载参数，不会覆盖已输入的参数，如果输入留空
+                    则尝试从当前目录 (使用 conf/ini/cfg 作为扩展名) 或默认位置
+                    加载
     -h, --help      显示此帮助信息并退出
     -v, --version   显示版本信息并退出
 ```
 
 ```markdown
-C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent
-欢迎使用 Ban-Peers 0.9.1
-19:44:33 设定 uTorrent 配置 'webui.allow_pairing' 到 True  **_允许配对_**
-19:44:35 设定 uTorrent 配置 'gui.show_plus_upsell_nodes' 到 False  **_移除侧栏付费版升级提示_**
-19:44:35 设定 uTorrent 配置 'webui.allow_pairing' 到 False  **_禁止配对_**
-19:44:35 设定 uTorrent 配置 'bt.use_rangeblock' 到 False  **_脚本退出后不会自动恢复_**
-19:44:35 设定 uTorrent 配置 'ipfilter.enable' 到 True
-19:44:35 uTorrent 自动屏蔽脚本开始运行
-请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
-```
-
-或者
-
-```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.9.1
+欢迎使用 Ban-Peers 0.9.2
+没有输入 ipfilter，尝试从配置文件加载
+从配置文件加载 ipfilter 失败，什么都没有找到
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
 X:\uTorrent
 请输入 WebUI 用户名: username
@@ -156,6 +153,27 @@ X:\uTorrent
 19:44:35 设定 uTorrent 配置 'ipfilter.enable' 到 True
 19:44:35 uTorrent 自动屏蔽脚本开始运行
 请选择你要执行的操作: (Q)退出，(S)停止，(R)重新开始，(P)暂停/恢复
+19:44:36 自动屏蔽脚本退出运行
+...
+
+...
+C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-config
+欢迎使用 Ban-Peers 0.9.2
+开始保存配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
+保存参数 "ipfilter = X:\uTorrent"
+保存参数 "port = 12345"
+保存参数 "authorization = username:password"
+...
+
+...
+C:\Users\username>ban_peers -p 54321
+欢迎使用 Ban-Peers 0.9.2
+没有输入 ipfilter，尝试从配置文件加载
+开始保存配置文件 "<YOUR CONFIG DIR>\BanPeers\ban_peers.conf"
+加载参数 "ipfilter = X:\uTorrent"
+**_没有加载已输入的 port 参数_**
+加载参数 "authorization = username:password"
+...
 ```
 
 - 退出：退出此脚本。

@@ -36,8 +36,7 @@ There are few simple guides:
 - Update a existing language po file. Commonly translators need only do the last
   one step.
 
-1. Generates a pot file, does the same (like new languages), then modify the
-   charset to UTF-8.
+1. Generates a pot file, does the same (like new languages).
 
 1. Merge pot file into po file use `msgmerge`.
 
