@@ -30,6 +30,17 @@ work, please recommend it to your friends, Thanks.
 - I took preventive measures, if you stiil found a normal peer has been banned,
   please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
 
+# Special explanation
+- Report fake progress, most of the results are due to poor connection leads,
+  in smooth connection case, I have seek to ensure there is no false positives.
+  Even the peers due to network factor have be banned, there is no bad influence
+  for both normal use the bittorrent network, unless that peer is the only seed.
+- Refused upload, peer never transport even 1 byte valid data due to all causes,
+  e.g. deliberately leech, network poor, bugs or unreasonable settings of
+  μTorrent itself etc. So, if the situation has not changed at a period of time
+  after refused flag has been checked, temporary banned to release its occupied
+  connections, that helps connect to other peers which may upload smoothly.
+
 # Installation
 Install from 
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
@@ -193,7 +204,7 @@ Load argument "authorization = username:password"
 ...
 ```
 
-- Quit: exit the script.
+- Quit: stop checking and exit the Python.
 - Stop: stop checking if run script via import as package, or same as Quit.
 - Restart: reload ipfilter.dat, it is useful when manually modify ipfilter.dat.
 - Pause: pause checking, it is useful when manually modify ipfilter.dat.
@@ -202,6 +213,16 @@ Load argument "authorization = username:password"
 # Got troubles/ideas
 Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post
 them, maybe someone can help you.
+
+# Known issues
+- Integers in data form which have be received from Web API will be converted to
+  32-bit signed number，it caused numeric overflow. Integer numeric from 2G to
+  4G will overflow as -2G to 0, then loop overflow to 0 per 4G. Ban-Peers has
+  taken some measures to relieve this issue, all download tasks which added and
+  started after Ban-Peers running will not be caused false positives.
+- The μTorrent of classic desktop versions seems identify its mobile versions
+  as fack clients, Ban-Peers will take a unanimous and no special measures for.
+  If problems, please feedback directly to the official forum.
 
 # What μTorrent settings should have been modified
 - Global
