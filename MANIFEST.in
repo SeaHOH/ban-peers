@@ -2,3 +2,4 @@ include LICENSE
 include README_zh.md
 recursive-include src *LICENSE*
 recursive-include src *README*
+recursive-include src *.pot

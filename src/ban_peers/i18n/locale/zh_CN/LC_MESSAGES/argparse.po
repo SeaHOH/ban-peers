@@ -20,7 +20,7 @@ msgstr ""
 
 #: argparse.py:296
 msgid "usage: "
-msgstr "用 法: "
+msgstr "用法: "
 
 #: argparse.py:854
 msgid ".__call__() not defined"

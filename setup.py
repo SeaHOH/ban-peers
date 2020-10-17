@@ -126,15 +126,12 @@ setup(
     long_description_content_type='text/markdown',
     keywords='BitTorrent uTorrent anti-leech ban block XunLei anti-ads',
     package_dir={'': src},
-    package_data={
-        package: ['vendor.txt'],
-        i18n: ['locale/*.pot', 'locale/*/*/*.[mp]o']
-    },
+    package_data={package: ['vendor.txt'], i18n: ['locale/*/*/*.[mp]o']},
     packages=packages,
     zip_safe=True,
     platforms='any',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Environment :: Console',

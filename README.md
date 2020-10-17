@@ -8,11 +8,12 @@ QQDownload, Offline download servers, other infamous leech clients, and BT
 players, fake clients, who reported fake progress, the fact in serious leech.
 
 Execute checking per 10 seconds, the banned time can be specified by the start-up
-parameters, default is 12 hours. In some cases, temporary banned for 1 hour if
-the torrent is seeding. Also can temporary banned peers which refused upload
-10 minutes in downloading torrents if AVAILABILITY greater than 10. At the same
-time, this script will not broke the existing IP ranges (non-single IP) in
-ipfilter, they will be stored as-is.
+parameters, default is 12 hours. In some cases, temporary banned for 1 hour, if
+the torrent's AVAILABILITY greater than 20, or its DOWNLOAD SPEED overrun peer's
+UPLOAD SPEED by 1 MiB/s, or it's seeding. Also can temporary banned peers which
+refused upload 10 minutes in downloading torrents if AVAILABILITY greater than 10.
+At the same time, this script will not broke the existing IP ranges (non-single IP)
+in ipfilter, they will be stored as-is.
 
 [A gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of
 μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via
@@ -30,7 +31,7 @@ work, please recommend it to your friends, Thanks.
 - I took preventive measures, if you stiil found a normal peer has been banned,
   please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
 
-# Special explanation
+# Special Explanation
 - Report fake progress, most of the results are due to poor connection leads,
   in smooth connection case, I have seek to ensure there is no false positives.
   Even the peers due to network factor have be banned, there is no bad influence
@@ -101,13 +102,12 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 0.9.2
+Welcome using Ban-Peers 1.0.0
 
-usage: ban_peers.pyz [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
-                     [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R]
-                     [-U] [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h]
-                     [-v]
-                     [IPFILTER-PATH]
+usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
+                 [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
+                 [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h] [-v]
+                 [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
@@ -167,7 +167,7 @@ Optional Arguments:
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 0.9.2
+Welcome using Ban-Peers 1.0.0
 No ipfilter has be inputted, try load from config file
 Load ipfilter from config file fail, found nothing
 Please input uTorrent settings folder path or ipfilter file path:
@@ -186,7 +186,7 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 ...
 $ ban_peers -p 12345 -a username:password /var/lib/utserver --save-config
-Welcome using Ban-Peers 0.9.2
+Welcome using Ban-Peers 1.0.0
 Start saving config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Save argument "ipfilter = /var/lib/utserver"
 Save argument "port = 12345"
@@ -195,7 +195,7 @@ Save argument "authorization = username:password"
 
 ...
 $ ban-peers -p 54321
-Welcome using Ban-Peers 0.9.2
+Welcome using Ban-Peers 1.0.0
 No ipfilter has be inputted, try load from config file
 Start loading config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Load argument "ipfilter = /var/lib/utserver"
@@ -214,7 +214,7 @@ Load argument "authorization = username:password"
 Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post
 them, maybe someone can help you.
 
-# Known issues
+# Known Issues
 - Integers in data form which have be received from Web API will be converted to
   32-bit signed number，it caused numeric overflow. Integer numeric from 2G to
   4G will overflow as -2G to 0, then loop overflow to 0 per 4G. Ban-Peers has
@@ -262,7 +262,7 @@ them, maybe someone can help you.
     `1048576` download size less than 1 GiB, limit to 1 MiB/s  
     `524288` download size less than 10 GiB, limit to 512 KiB/s
 
-# Related projects
+# Related Projects
 - μTorrent
 
     https://github.com/ShenHongFei/utorrent-block-xunlei  

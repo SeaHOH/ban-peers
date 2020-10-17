@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '0.9.2'
+__version__ = '1.0.0'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -66,7 +66,6 @@ Web Page: {__webpage__}
 '''
 
 
-_linesep = os.linesep.replace('\r\n', '\n').encode()
 _default_columns = 80
 _max_columns = get_terminal_size().columns
 if _max_columns < _default_columns and (
@@ -467,7 +466,7 @@ class List2Attr:
         object.__setattr__(self, '_list', list)
         object.__setattr__(self, '_type', self._TYPES[type.upper()])
 
-    def __getattr__(self, name:str) -> Union[int, float, str]:
+    def __getattr__(self, name) -> Union[int, float, str]:
         name = name.upper()
         try:
             return self._cache[name]
@@ -476,29 +475,44 @@ class List2Attr:
         if isinstance(value, int) and 0 > value >= self._32bit_signed_mini:
             # [PEER] Overflow 32bit signed (2G - 4G)
             value &= self._32bit1
-        if name == 'IP' and ':' in value:
-            value = f'[{value}]'
-        elif name == 'CLIENT' and value[:1] == '-':
-            value = value.split('-')[1]
+        if name == 'IP':
+            if ':' in value:
+                value = f'[{value}]'
+        elif name == 'CLIENT':
+            if value[:1] == '-':
+                value = value.split('-')[1]
         elif name == 'AVAILABILITY':
             value = value / 65536
         self._cache[name] = value
         return value
 
-    def __setattr__(self, name:str, value:Union[int, float, str]) -> None:
+    def __setattr__(self, name, value) -> None:
         name = name.upper()
         self._list[self._type[name]]
-        if name == 'IP' and isinstance(value, str) and value[:1] == '[':
-            value = value[1:-1]
-        elif name == 'AVAILABILITY':
-            value = int(value * 65536)
+        if name == 'IP':
+            if value[:1] != '[' and ':' in value:
+                value = f'[{value}]'
         self._cache[name] = value
 
-    def getraw(self, name:str) -> Union[int, float, str]:
+    def getraw(self, name:str) -> Union[int, str]:
         return self._list[self._type[name.upper()]]
 
 
 class UTorrentWebAPI:
+
+    _high_level:Set[str]
+    _torrents_private:Dict[str, bool]
+    _statistics:Dict[str, Dict[str, Tuple[int, int]]]
+    _statistics_started:Dict[str, float]
+    _statistics_overflow:MutableMapping[str, Dict[str, Tuple[int, ...]]]
+    _statistics_progress:MutableMapping[str,
+            Dict[str, Union[float, Tuple[int, int, Optional[float]]]]]
+    _statistics_uploaded:MutableMapping[str,
+            Dict[str, Tuple[int, int, int, Optional[float]]]]
+    _statistics_refused:MutableMapping[str, Dict[str, Optional[float]]]
+    log_ip:Dict[str, Literal[True]]
+    ipfilter:Dict[str, Tuple[bytes, bytes, bytes, int]]
+
     def __init__(self,
                 ipfilter:Optional[str], host:str='127.0.0.1', port:int=8080,
                 username:Optional[str]=None, password:Optional[str]=None,
@@ -530,41 +544,35 @@ class UTorrentWebAPI:
         self.log_unknown = log_unknown
         self.log_header_fmt = log_header_fmt
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
-        self._high_level:Set[str] = set()
-        self._torrents_private:Dict[str, bool] = {}
-        self._statistics:Dict[str, Dict[str, Tuple[int, int]]] = {}
-        self._statistics_started:Dict[str, float] = {}
-        self._statistics_overflow:MutableMapping \
-                [str, Dict[str, Tuple[int, ...]]] = collections.defaultdict(dict)
-        self._statistics_progress:MutableMapping \
-                [str, Dict[str, Union[float, Tuple[int, int, Optional[float]]]]] \
-                = collections.defaultdict(dict)
-        self._statistics_uploaded:MutableMapping \
-                [str, Dict[str, Tuple[int, int, int, Optional[float]]]] \
-                = collections.defaultdict(dict)
-        self._statistics_refused:MutableMapping \
-                [str, Dict[str, Optional[float]]] = collections.defaultdict(dict)
+        self._high_level = set()
+        self._torrents_private = {}
+        self._statistics = {}
+        self._statistics_started = {}
+        self._statistics_overflow = collections.defaultdict(dict)
+        self._statistics_progress = collections.defaultdict(dict)
+        self._statistics_uploaded = collections.defaultdict(dict)
+        self._statistics_refused = collections.defaultdict(dict)
         self._statistics_str = ''
         self._need_save = False
         self.running = False
-        self.log_ip:Dict[str, Literal[True]] = {}
+        self.log_ip = {}
         self.init_ipfilter()
         self.init_opener()
         self.get_token()
 
     def init_ipfilter(self) -> None:
-        ipfilter:Dict[str, Tuple[bytes, bytes, bytes, int]] = {}
-        self.ipfilter = ipfilter
+        ipfilter = self.ipfilter = {}
         ipfilter_range = []
         ct = int(time.time())
         ct_bytes = str(ct).encode()
         for line in (os.path.exists(self.file_ipfilter) and
                      open(self.file_ipfilter, 'rb') or ()):
-            ip, _, rest = [p.strip() for p in line.partition(b'#')]
+            ip, _, rest = line.partition(b'#')
             if b'-' in ip:
                 # Store IP range as is
-                ipfilter_range.append(line.replace(b'\r\n', _linesep))
+                ipfilter_range.append(line.rstrip())
             else:
+                ip = ip.strip()
                 ip_str = ip.decode()
                 if is_ip(ip_str):
                     reason, _, timestamp = [p.strip() for p in rest.partition(b';')]
@@ -573,8 +581,8 @@ class UTorrentWebAPI:
                     except ValueError:
                         ipfilter[ip_str] = ip, reason, ct_bytes, ct
         if ipfilter_range:
-            ipfilter_range.append(_linesep)
-        self.ipfilter_range = b''.join(ipfilter_range)
+            ipfilter_range.append(b'')
+        self.ipfilter_range = b'\n'.join(ipfilter_range)
 
     def save_ipfilter(self) -> None:
         buffering = sum((
@@ -589,7 +597,7 @@ class UTorrentWebAPI:
                 f.write(reason)
                 f.write(b' ; ')
                 f.write(timestamp)
-                f.write(_linesep)
+                f.write(b'\n')
 
     def init_opener(self) -> None:
         self._opener = opener = OpenerDirector()
@@ -719,7 +727,7 @@ class UTorrentWebAPI:
         expire_ips = list(ip
             for ip, (_, reason, _, timestamp) in self.ipfilter.items()
             if timestamp < expire or timestamp < expire_interim and \
-                reason.startswith((b'Seeding', b'Suspected', b'Refused'))
+                reason.startswith((b'Seeding', b'TaskOK', b'Suspected', b'Refused'))
         )
         if self._need_save or expire_ips:
             for ip in expire_ips:
@@ -874,6 +882,7 @@ class UTorrentWebAPI:
                         % {'progress': peer.progress / 10})
                 ### Start check client name
                 anonymous = False
+                suspicious = ''
                 if sum(1 if ord(c) < 128 else -1 for c in peer.client) < 0:
                     anonymous = True
                     peer.client = repr(peer.client)  # For better print
@@ -881,11 +890,13 @@ class UTorrentWebAPI:
                         relevance == 0 and peer.country == 'CN' and \
                         'Transmission' in peer.client:
                     # Chinese Offline Download Servers, almost are leech clients
+                    suspicious = 'Offline'
                     log(_('offline download server'))
                     if reasons and reasons[0] != 'Progress':
                         del reasons[0]
                     reasons.append('Offline')
                 elif LEECHER_XUNLEI.search(peer.client):
+                    suspicious = 'XunLei'
                     log(_('XunLei'))
                     if not self.xunlei_reprieve or \
                             peer.port in [12345, 15000] or not seeding and (
@@ -901,6 +912,7 @@ class UTorrentWebAPI:
                         reasons.append('Seeding')
                         reasons.append('XunLei')
                 elif LEECHER_PLAYER.search(peer.client):
+                    suspicious = 'Player'
                     log(_('player'))
                     if seeding:
                         reasons.append('Seeding')
@@ -914,6 +926,7 @@ class UTorrentWebAPI:
                     # uTorrent identification
                     # It mistook uTorrent Android versions, so foolish
                     # I would never to feedback this issue to official
+                    suspicious = 'Fake'
                     log(_('fack client'))
                     if seeding:
                         reasons.append('Seeding')
@@ -925,6 +938,7 @@ class UTorrentWebAPI:
                             peer.downspeed * 10 < peer.upspeed):
                         reasons.append('Fake')
                 elif LEECHER_OTHER.search(peer.client):
+                    suspicious = 'Leecher'
                     log(_('leecher client'))
                     if seeding:
                         reasons.append('Seeding')
@@ -933,6 +947,11 @@ class UTorrentWebAPI:
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 < relevance):
                         reasons.append('Leecher')
+                if suspicious and not reasons and (
+                        torrent.availability > 20 or
+                        torrent.downspeed - peer.downspeed > _1m):
+                    reasons.append('TaskOK')
+                    reasons.append(suspicious)
                 ### End check client name
                 if self.check_serious_leech or anonymous:
                     try:
@@ -1115,14 +1134,18 @@ class UTorrentWebAPI:
 
 
 class UTorrentPairing:
+
+    _pairing:Optional[str]
+    _session:Optional[str]
+
     def __init__(self, utweb:UTorrentWebAPI, close_pairing:bool=False) -> None:
         self._utweb = utweb
         self._close_pairing = close_pairing
         self._url_root = utweb._url_root.replace('/gui/', '/btapp/')
         self._req = Request(self._url_root)
         self._opener = utweb._opener
-        self._pairing:Optional[str] = None
-        self._session:Optional[str] = None
+        self._pairing = None
+        self._session = None
 
     def request(self, params:Mapping[str, str]) -> HTTPResponse:
         params_str = urlencode({
@@ -1311,7 +1334,7 @@ def main(argv=None):
                         'Don\'t turn off Web Pairing setting after'))
     cgroup = parser.add_mutually_exclusive_group()
     cgroup.add_argument('-s', '--save-config', nargs='?', dest='config',
-                        type=config.FileType('w'),
+                        type=config.FileType('w', encoding='utf-8'),
                         const=config._default_config_file,
                         metavar=_('CONFIG-FILE'),
                         help=_(
@@ -1320,7 +1343,7 @@ def main(argv=None):
                         'default location "%(config)s" if empty input')
                         % {'config': config._default_config_file})
     cgroup.add_argument('-l', '--load-config', nargs='?', dest='config',
-                        type=config.FileType('r'),
+                        type=config.FileType('r', encoding='utf-8'),
                         const=config.current_dir_config_file() or
                               config._default_config_file,
                         metavar=_('CONFIG-FILE'),

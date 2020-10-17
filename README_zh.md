@@ -8,10 +8,11 @@
 
 每 10 秒进行一次检查，屏蔽时间可以由启动参数指定，默认为 12 小时。屏蔽吸血并不是
 一刀切完全屏蔽，个别会有回传且处于容忍度以内，这时不会马上屏蔽它。这是个反向吸血
-措施，如果此下载在本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的
-仍然屏蔽 12 小时，无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝
-上传 10 分钟的对端，如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围
-格式屏蔽 (非单 IP 格式)，它们会被原样保存。
+措施，如果此下载健康度大于 20，或本机下载速度超出对端上传速度 1 MiB/s，亦或是在
+本机处于做种状态，那么就会马上屏蔽它们，其中判断为恶性吸血的仍然屏蔽 12 小时，
+无法确定的则只临时屏蔽 1 小时。还可临时屏蔽下载状态任务中拒绝上传 10 分钟的对端，
+如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，
+它们会被原样保存。
 
 给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/issues/1)。
 
@@ -88,12 +89,12 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 0.9.2
+欢迎使用 Ban-Peers 1.0.0
 
-用 法: ban_peers.pyz [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时]
-                     [-t 分钟] [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
-                     [-A] [-O] [-s [配置文件] | -l [配置文件]] [-h] [-v]
-                     [IP屏蔽配置路径]
+用法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
+                [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O]
+                [-s [配置文件] | -l [配置文件]] [-h] [-v]
+                [IP屏蔽配置路径]
 
 通过网页 API 检查并屏蔽 BitTorrent 吸血对端，移除广告，工作于 uTorrent。
 
@@ -148,7 +149,7 @@ ban_peers -h
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 0.9.2
+欢迎使用 Ban-Peers 1.0.0
 没有输入 ipfilter，尝试从配置文件加载
 从配置文件加载 ipfilter 失败，什么都没有找到
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
@@ -167,7 +168,7 @@ X:\uTorrent
 
 ...
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-config
-欢迎使用 Ban-Peers 0.9.2
+欢迎使用 Ban-Peers 1.0.0
 开始保存配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 保存参数 "ipfilter = X:\uTorrent"
 保存参数 "port = 12345"
@@ -176,9 +177,9 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-con
 
 ...
 C:\Users\username>ban_peers -p 54321
-欢迎使用 Ban-Peers 0.9.2
+欢迎使用 Ban-Peers 1.0.0
 没有输入 ipfilter，尝试从配置文件加载
-开始保存配置文件 "<YOUR CONFIG DIR>\BanPeers\ban_peers.conf"
+开始加载配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 加载参数 "ipfilter = X:\uTorrent"
 **_没有加载已输入的 port 参数_**
 加载参数 "authorization = username:password"
