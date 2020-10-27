@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -657,7 +657,7 @@ class UTorrentWebAPI:
             props = self.get_props(hash)
             self._torrents_private[hash] = private = \
                     props['dht'] == props['pex'] == -1 and (
-                    props['trackers'].find('?') > 0 or
+                    props['trackers'].find('?') > 0 or   #
                     props['trackers'].count('://') < 3)  # Maybe flag by mistake
             return private
 
@@ -780,24 +780,21 @@ class UTorrentWebAPI:
             size_millesimal = torrent.size // 1000
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
+            time_fp = 60
+            ratio_sl = 10
             if seeding:
                 self._statistics_started.pop(hash, None)
-            else:
+            elif self.check_fake_progress or self.check_serious_leech:
                 started = self._statistics_started.setdefault(hash, ct)
-            if self.check_fake_progress or self.check_serious_leech:
                 files = list(self.get_files(hash))
                 size_todl = sum(file.size for file in files if file.priority)
                 size_todl_tenth = size_todl // 10
-                size_downloaded = sum(file.downloaded for file in files)
-                size_last_downloaded = torrent.downloaded - size_downloaded
-                time_fp = 60
-                ratio_sl = 10
                 # High level thresholds are used for older/weaker Torrents
                 if hash in self._high_level:
                     if torrent.availability < 10:
                         time_fp = 300
                         ratio_sl = 30
-                elif not seeding and ct - started > 300 and \
+                elif ct - started > 300 and \
                         torrent.eta * _10g > torrent.remaining * 86400:
                         # Less than 10 GiB/day
                     time_fp = 300
@@ -960,9 +957,6 @@ class UTorrentWebAPI:
                     except KeyError:
                         luploaded = suploaded = _suploaded = 0
                         t = None
-                        if size_last_downloaded > _10m:
-                            # May has been seeding before
-                            _suploaded = peer.uploaded
                     if seeding:
                         _suploaded = peer.uploaded - luploaded
                         uploaded = 0
@@ -981,7 +975,8 @@ class UTorrentWebAPI:
                             0 < peer.downspeed * 100 < peer.upspeed) and
                             uploaded > min(max(size_todl_tenth, _10m), _100m) and
                             uploaded > peer.downloaded * ratio_sl < relevance):
-                        if t is None:
+                        if t is None or self.check_refused_upload and \
+                                peer.relevance > 0 and peer.downloaded == 0:
                             t = ct
                         elif peer.relevance == 0 or \
                                 ct - t > peer.downloaded / _1m * 10:
@@ -995,7 +990,7 @@ class UTorrentWebAPI:
                         t = None
                     self._statistics_uploaded[hash][ip_port] = \
                             luploaded, suploaded, _suploaded, t
-                if self.check_refused_upload and \
+                if (self.check_refused_upload or anonymous) and \
                         not seeding and peer.downloaded == 0:
                     t = self._statistics_refused[hash].get(ip_port)
                     if reasons:
@@ -1313,8 +1308,9 @@ def main(argv=None):
     parser.add_argument('-N', '--no-refused-upload-check',
                         action='store_true',
                         help=_(
-                        'Don\'t checking refused upload, this checking is '
-                        'useful to connect potential active peers'))
+                        'Don\'t checking refused upload, except anonymous peers'
+                        ', this checking is useful to connect potential active '
+                        'peers'))
     parser.add_argument('-R', '--private-check',
                         action='store_true',
                         help=_(
