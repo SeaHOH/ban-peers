@@ -224,6 +224,8 @@ them, maybe someone can help you.
 - The μTorrent of classic desktop versions seems identify its mobile versions
   as fack clients, Ban-Peers will take a unanimous and no special measures for.
   If problems, please feedback directly to the official forum.
+- There is a rare uTorrent bug choked torrent downloading, we have relieved it
+  by restart download, first 5 pieces will be checked now.
 
 # What μTorrent settings should have been modified
 - Global
