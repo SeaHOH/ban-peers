@@ -502,7 +502,9 @@ class UTorrentWebAPI:
 
     _high_level:Set[str]
     _torrents_private:Dict[str, bool]
+    _torrents_piece_size:Dict[str, int]
     _statistics:Dict[str, Dict[str, Tuple[int, int]]]
+    _statistics_choked:Dict[str, Tuple[int, Optional[float]]]
     _statistics_started:Dict[str, float]
     _statistics_overflow:MutableMapping[str, Dict[str, Tuple[int, ...]]]
     _statistics_progress:MutableMapping[str,
@@ -546,7 +548,9 @@ class UTorrentWebAPI:
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
         self._high_level = set()
         self._torrents_private = {}
+        self._torrents_piece_size = {}
         self._statistics = {}
+        self._statistics_choked = {}
         self._statistics_started = {}
         self._statistics_overflow = collections.defaultdict(dict)
         self._statistics_progress = collections.defaultdict(dict)
@@ -661,6 +665,20 @@ class UTorrentWebAPI:
                     props['trackers'].count('://') < 3)  # Maybe flag by mistake
             return private
 
+    def get_piece_size(self, torrent:List2Attr) -> int:
+        try:
+            return self._torrents_piece_size[torrent.hash]
+        except KeyError:
+            file = list(self.get_files(torrent.hash))[-1]
+            num_pieces = file.first_piece + file.num_pieces
+            size_piece = 1 << 14
+            for _ in range(11):
+                if abs(num_pieces - torrent.size // size_piece) <= 1:
+                    break
+                size_piece <<= 1
+            self._torrents_piece_size[torrent.hash] = size_piece
+            return size_piece
+
     def get_torrents(self) -> Iterable[List2Attr]:
         torrents = json.load(self.request(params=self._params_list))
         if 'torrentc' in torrents:
@@ -668,6 +686,8 @@ class UTorrentWebAPI:
         for hash in torrents.get('torrentm', []):
             self._high_level.discard(hash)
             self._torrents_private.pop(hash, None)
+            self._torrents_piece_size.pop(hash, None)
+            self._statistics_choked.pop(hash, None)
             self._statistics_started.pop(hash, None)
             self._statistics_overflow.pop(hash, None)
             self._statistics_progress.pop(hash, None)
@@ -780,6 +800,36 @@ class UTorrentWebAPI:
             size_millesimal = torrent.size // 1000
             seeding = torrent.progress >= 1000  # uTorrent bug?
             hash = torrent.hash
+            # Relieve a rare uTorrent bug
+            # torrent download is choked after a few minutes started
+            # first 5 pieces, downloaded mod piece_size == 0
+            if not seeding and \
+                    0 < torrent.downloaded <= self.get_piece_size(torrent) * 5:
+                choked = False
+                try:
+                    last_downloaded, t = self._statistics_choked[hash]
+                except KeyError:
+                    last_downloaded, t = torrent.downloaded, None
+                if torrent.downloaded != last_downloaded:
+                    last_downloaded, t = torrent.downloaded, None
+                elif t is None:
+                    if last_downloaded % self.get_piece_size(torrent) == 0:
+                        t = ct
+                elif ct - t > 300:
+                    choked = True
+                    t = None
+                self._statistics_choked[hash] = torrent.downloaded, t
+                if choked:
+                    msg = _('[%(torrent)s] is choked with bug, restart it ')
+                    try:
+                        self.request(params={'action': 'stop', 'hash': hash})
+                        time.sleep(1)
+                        self.request(params={'action': 'start', 'hash': hash})
+                        msg += _('successed')
+                    except:
+                        msg += _('failed')
+                    self.log(msg % {'torrent': torrent.name})
+                    continue
             time_fp = 60
             ratio_sl = 10
             if seeding:
@@ -1068,6 +1118,8 @@ class UTorrentWebAPI:
                             self.log(_('uTorrent has disconnected'))
                             # Don't clear `self._statistics`
                             self._high_level.clear()
+                            self._torrents_piece_size.clear()
+                            self._statistics_choked.clear()
                             self._statistics_started.clear()
                             self._statistics_overflow.clear()
                             self._statistics_progress.clear()
