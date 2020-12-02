@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -52,11 +52,11 @@ else:
     except FileNotFoundError:
         pass
 
-description = __doc__ = _(__doc__)
+description = _(__doc__)
 __doc__ = f'''\
 {__app_name__} {__version__}
 
-{__doc__}
+{description}
 
 {__license__} License Copyright (c) {__copyright__}
 
@@ -75,15 +75,6 @@ if _max_columns < _default_columns and (
 _max_columns -= 1
 
 CLL = f'\r{" " * _max_columns}\r'
-
-_1m = 1024 * 1024
-_10m = _1m * 10
-_100m = _1m * 100
-_500m = _1m * 500
-_1g = _1m * 1024
-_2g = _1g * 2
-_4g = _1g * 4
-_10g = _1g * 10
 
 TOKEN = re.compile('<div id=.token.[^>]*>([^<]+)</div>')
 # The PEER CLIENT is not a PeerID or a User-Agent, it's a mixed string
@@ -321,6 +312,29 @@ def make_size_human(n:Union[int, float]) -> str:
 def limit_dict_lenght(dict:Dict, lenght:int) -> None:
     while len(dict) > lenght:
         del dict[next(iter(dict))]
+
+
+class KB:
+    units = {'K': 1 << 10, 'M': 1 << 20, 'G': 1 << 30}
+    _cache:Dict[Tuple[str, int], int] = {}
+
+    def __getattr__(self, name) -> int:
+        try:
+            unit = name[0].upper()
+            assert unit in self.units
+            num = int(name[1:])
+            assert 0 < num < 1024
+        except:
+            raise AttributeError(
+                f'{self.__class__.__name__!r} object has no attribute {name!r}')
+        key = unit, num
+        try:
+            return self._cache[key]
+        except KeyError:
+            self._cache[key] = value = self.units[unit] * num
+            return value
+
+kb = KB()
 
 
 class List2Attr:
@@ -798,7 +812,7 @@ class UTorrentWebAPI:
         ct = time.monotonic()
         for torrent in self.get_torrents():
             size_millesimal = torrent.size // 1000
-            seeding = torrent.progress >= 1000  # uTorrent bug?
+            seeding = torrent.progress >= 1000  # uTorrent bug
             hash = torrent.hash
             # Relieve a rare uTorrent bug
             # torrent download is choked after a few minutes started
@@ -845,7 +859,7 @@ class UTorrentWebAPI:
                         time_fp = 300
                         ratio_sl = 30
                 elif ct - started > 300 and \
-                        torrent.eta * _10g > torrent.remaining * 86400:
+                        torrent.eta * kb.g10 > torrent.remaining * 86400:
                         # Less than 10 GiB/day
                     time_fp = 300
                     ratio_sl = 30
@@ -853,11 +867,11 @@ class UTorrentWebAPI:
                                'increase additional check threshold')
                              % {'hash': hash, 'torrent': torrent.name})
                     self._high_level.add(hash)
-                    if size_todl > _1g:
+                    if size_todl > kb.g1:
                         # Limit upload rate to increase read cache hits
                         # and availability (helps complete download)
                         self.set_props(hash, 'ulrate',
-                                       _1m // 2 if size_todl > _10g else _1m)
+                                       kb.m1 // 2 if size_todl > kb.g10 else kb.m1)
             allow_banned_refused_upload = torrent.availability > 10
             for peer in self.get_peers(hash):
                 if peer.ip in self.ipfilter or peer.upspeed < 256 and \
@@ -871,16 +885,16 @@ class UTorrentWebAPI:
                 except KeyError:
                     last_uploaded, last_downloaded, up_ot, down_ot = \
                             peer.uploaded, peer.downloaded, 0, 0
-                if last_uploaded > peer.uploaded + _2g:
+                if last_uploaded > peer.uploaded + kb.g2:
                     up_ot += 1
-                if last_downloaded > peer.downloaded + _2g:
+                if last_downloaded > peer.downloaded + kb.g2:
                     down_ot += 1
                 self._statistics_overflow[hash][ip_port] = \
                             peer.uploaded, peer.downloaded, up_ot, down_ot
                 if up_ot:
-                    peer.uploaded += up_ot * _4g
+                    peer.uploaded += up_ot * kb.g4
                 if down_ot:
-                    peer.downloaded += down_ot * _4g
+                    peer.downloaded += down_ot * kb.g4
                 relevance = size_millesimal * peer.relevance + peer.downloaded
                 if peer.downloaded > 0:
                     self._statistics_progress[hash].pop(ip_port, None)
@@ -948,8 +962,8 @@ class UTorrentWebAPI:
                     if not self.xunlei_reprieve or \
                             peer.port in [12345, 15000] or not seeding and (
                             180 < peer.waited < 3600 or
-                            peer.downloaded < _1m and peer.relevance == 0 or
-                            peer.uploaded > min(size_millesimal, _10m) and (
+                            peer.downloaded < kb.m1 and peer.relevance == 0 or
+                            peer.uploaded > min(size_millesimal, kb.m10) and (
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 < relevance)):
                         if reasons and reasons[0] != 'Progress':
@@ -966,10 +980,11 @@ class UTorrentWebAPI:
                         reasons.append('Player')
                     elif peer.uploaded > peer.downloaded and (
                             peer.relevance == 0 or
-                            peer.downspeed < 32768 or
-                            peer.downspeed * 10 < peer.upspeed):
+                            peer.downspeed * 10 < peer.upspeed and
+                            peer.downspeed + kb.k50 < peer.upspeed):
                         reasons.append('Player')
-                elif peer.client.startswith('[FAKE]'):
+                elif peer.client.startswith('[FAKE]') or \
+                        '/0.0.0.0' in peer.client:
                     # uTorrent identification
                     # It mistook uTorrent Android versions, so foolish
                     # I would never to feedback this issue to official
@@ -979,10 +994,10 @@ class UTorrentWebAPI:
                         reasons.append('Seeding')
                         reasons.append('Fake')
                     elif peer.downloaded < peer.uploaded > \
-                            min(size_millesimal, _10m) and (
+                            min(size_millesimal, kb.m10) and (
                             peer.relevance == 0 or
-                            peer.downspeed < 32768 or
-                            peer.downspeed * 10 < peer.upspeed):
+                            peer.downspeed * 10 < peer.upspeed and
+                            peer.downspeed + kb.k50 < peer.upspeed):
                         reasons.append('Fake')
                 elif LEECHER_OTHER.search(peer.client):
                     suspicious = 'Leecher'
@@ -990,13 +1005,13 @@ class UTorrentWebAPI:
                     if seeding:
                         reasons.append('Seeding')
                         reasons.append('Leecher')
-                    elif peer.uploaded > min(size_millesimal, _10m) and (
+                    elif peer.uploaded > min(size_millesimal, kb.m10) and (
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 < relevance):
                         reasons.append('Leecher')
-                if suspicious and not reasons and (
+                if suspicious and not reasons and peer.uploaded > 0 and (
                         torrent.availability > 20 or
-                        torrent.downspeed - peer.downspeed > _1m):
+                        torrent.downspeed - peer.downspeed > kb.m1):
                     reasons.append('TaskOK')
                     reasons.append(suspicious)
                 ### End check client name
@@ -1017,19 +1032,19 @@ class UTorrentWebAPI:
                             _suploaded = 0
                         uploaded = luploaded - suploaded
                     if not reasons and uploaded and peer.progress < 1000 and (
-                            relevance == 0 and peer.uploaded > _500m or
+                            relevance == 0 and peer.uploaded > kb.m500 or
                             peer.relevance == 0 and
-                            peer.uploaded > max(peer.downloaded * 10, _1g) or
+                            peer.uploaded > max(peer.downloaded * 10, kb.g1) or
                             peer.relevance > 0 and
                             ('d' in peer.flags or peer.waited > 60 or
                             0 < peer.downspeed * 100 < peer.upspeed) and
-                            uploaded > min(max(size_todl_tenth, _10m), _100m) and
+                            uploaded > min(max(size_todl_tenth, kb.m10), kb.m100) and
                             uploaded > peer.downloaded * ratio_sl < relevance):
                         if t is None or self.check_refused_upload and \
                                 peer.relevance > 0 and peer.downloaded == 0:
                             t = ct
                         elif peer.relevance == 0 or \
-                                ct - t > peer.downloaded / _1m * 10:
+                                ct - t > peer.downloaded / kb.m1 * 10:
                             # Did not reached conditions within 10X seconds
                             # X means it had downloaded X MiB from peer
                             log(_('highly suspected of leecher'))
@@ -1118,6 +1133,7 @@ class UTorrentWebAPI:
                             self.log(_('uTorrent has disconnected'))
                             # Don't clear `self._statistics`
                             self._high_level.clear()
+                            self._torrents_private.clear()
                             self._torrents_piece_size.clear()
                             self._statistics_choked.clear()
                             self._statistics_started.clear()
@@ -1339,7 +1355,7 @@ def main(argv=None):
                         help=_(
                         'Format of log header, see time.strftime, '
                         'default %(header)s')
-                        % {'header': kwargs['log_header_fmt'].replace("%", "%%")})
+                        % {'header': kwargs['log_header_fmt'].replace('%', '%%')})
     parser.add_argument('-C', '--resolve-country',
                         action='store_true',
                         help=_(
@@ -1413,7 +1429,7 @@ def main(argv=None):
     if args.version:
         print(__app_name__, __version__)
         sys.exit()
-    print(_("Welcome using"), __app_name__, __version__)
+    print(_('Welcome using'), __app_name__, __version__)
     if args.help:
         try:
             from . import monkey
