@@ -14,7 +14,7 @@
 如果健康度大于 10。同时，此脚本不会影响已有的 ipfilter 范围格式屏蔽 (非单 IP 格式)，
 它们会被原样保存。
 
-给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/issues/1)。
+给 μTorrent 3 经典桌面版免费版本用户的[一份礼物](https://github.com/SeaHOH/ban-peers/discussions/1)。
 
 极力抵制吸血，这是我们应有的权利。如果你觉得 Ban-Peers 还不错，请向朋友推荐它，谢谢。
 
@@ -23,7 +23,7 @@
 - **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
 - 如果无法接受频繁读写 ipfilter.dat 文件，可以将它软链接到内存盘。
 - 虽然已采取一些预防措施，如果你仍然发现有正常的对端被错误屏蔽，
-  请反馈到 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
+  请反馈到 [Issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
 # 特别说明
 - 汇报虚假进度，其大部分结果都是由于连接不畅导致，已尽量确保连接顺畅情况下不误报。
@@ -194,8 +194,8 @@ C:\Users\username>ban_peers -p 54321
 - 恢复：只是恢复检查。
 
 # 遇到麻烦/有其它想法
-访问 [issues 板块](https://github.com/SeaHOH/ban-peers/issues)并贴出它们，
-也许有人能够帮到你。
+访问 [Discussions 板块](https://github.com/SeaHOH/ban-peers/discussions)并贴出它们，
+也许有人能够帮到你。如果你不确定是否是程序本身有问题，可以直接反馈到 [Issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
 # 已知问题
 - 网页 API 返回的对端数据中，数值被转换成 32 位有符号数，这会导致数值溢出。2G

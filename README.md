@@ -15,8 +15,8 @@ refused upload 10 minutes in downloading torrents if AVAILABILITY greater than 1
 At the same time, this script will not broke the existing IP ranges (non-single IP)
 in ipfilter, they will be stored as-is.
 
-There is [a gift](https://github.com/SeaHOH/ban-peers/issues/1) to the users of
-μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via
+There is [a gift](https://github.com/SeaHOH/ban-peers/discussions/1) to the users
+of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via
 a translator (e.g. translate.google.com). There is also [a similar article](https://www.sb-innovation.de/showthread.php?34487-Clean-uTorrent)
 (see part **Technical information**) wrote in English.
 
@@ -30,7 +30,7 @@ work, please recommend it to your friends, Thanks.
 - If you can not accept read/write the ipfilter.dat file frequently, it can be
   soft/symbolic link to a RAM disk.
 - I took preventive measures, if you stiil found a normal peer has been banned,
-  please tell us via [issues board](https://github.com/SeaHOH/ban-peers/issues).
+  please tell us via [Issues board](https://github.com/SeaHOH/ban-peers/issues).
 
 # Special Explanation
 - Report fake progress, most of the results are due to poor connection leads,
@@ -212,8 +212,9 @@ Load argument "authorization = username:password"
 - Proceed: just proceed checking.
 
 # Got troubles/ideas
-Visit the [issues board](https://github.com/SeaHOH/ban-peers/issues) and post
-them, maybe someone can help you.
+Visit the [Discussions board](https://github.com/SeaHOH/ban-peers/discussions)
+and post them, maybe someone can help you. If you are not sure wether it is an
+issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH/ban-peers/issues).
 
 # Known Issues
 - Integers in data form which have be received from Web API will be converted to
