@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -100,13 +100,15 @@ LEECHER_PLAYER = re.compile('''
     [Tt]orc           | # Torch (TB)
     [Vv]ag            | # Vagaa (VG) [Dead?]
     [Xx]fp            | # Xfplay (XF)
+    [Zz]on            | # Zona (ZO)
     Unknown\s(?:
         DL            | # DanDan/DLBT (DL)
         QVO           | # Qvod (QVOD) [Dead]
         TB            | # Torch (TB)
         UW            | # uTorrent Web (UW)
         VG            | # Vagaa (VG) [Dead?]
-        XF              # Xfplay (XF)
+        XF            | # Xfplay (XF)
+        ZO              # Zona (ZO)
     )
 )
 ''', re.X)
@@ -147,6 +149,7 @@ LEECHER_OTHER = re.compile('''
 # Did not included in uTorrent's peer identification
 # https://www.bittorrent.org/beps/bep_0020.html
 # https://wiki.theory.org/BitTorrentSpecification#peer_id
+# https://github.com/webtorrent/bittorrent-peerid
 # Most of them has been died
 CLIENT_UNKNOWN = re.compile('''
 ^Unknown\s(?!
@@ -173,8 +176,11 @@ CLIENT_UNKNOWN = re.compile('''
     FC                | # FileCroc [Dead]
     FD                | # Free Download Manager
     FW                | # FrostWire
+    FL/1              | # Flud - Torrent Downloader
+    FL/[2-5]          | # Folx
     FX                | # Freebox BitTorrent
     GS                | # GSTorrent [Dead]
+    GT/0\.0\.0\.2     | # Go-Torrent [library]
     HK                | # Hekate [Dead?]
     HM                | # hMule [Dead]
     IL                | # iLivid [Dead]
@@ -183,6 +189,7 @@ CLIENT_UNKNOWN = re.compile('''
     LC                | # LeechCraft
     LH                | # LH-ABC [Dead]
     #M\d-\d           | # Bram's old BitTorrent and many other clients [Dead]
+    MG                | # MediaGet
     ML                | # MLdonkey
     MK                | # Meerkat [Dead]
     MO                | # MonoTorrent [Dead?]
@@ -197,6 +204,7 @@ CLIENT_UNKNOWN = re.compile('''
     RZ                | # RezTorrent [Dead?]
     SB                | # ~Swiftbit [Dead]
     SM                | # SoMud [Dead]
+    SP36              | # BitSpirit v3.6
     ST                | # SymTorrent [Dead]
     st                | # sharktorrent [Dead]
     tT                | # tTorrent
@@ -834,7 +842,7 @@ class UTorrentWebAPI:
                     t = None
                 self._statistics_choked[hash] = torrent.downloaded, t
                 if choked:
-                    msg = _('[%(torrent)s] is choked with bug, restart it ')
+                    msg = _('[%(hash)s][%(torrent)s] is choked with bug, restart it ')
                     try:
                         self.request(params={'action': 'stop', 'hash': hash})
                         time.sleep(1)
@@ -842,7 +850,7 @@ class UTorrentWebAPI:
                         msg += _('successed')
                     except:
                         msg += _('failed')
-                    self.log(msg % {'torrent': torrent.name})
+                    self.log(msg % {'hash': hash, 'torrent': torrent.name})
                     continue
             time_fp = 60
             ratio_sl = 10
