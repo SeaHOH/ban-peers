@@ -1,4 +1,5 @@
 # Ban-Peers ([English](https://github.com/SeaHOH/ban-peers/blob/master/README.md)/中文)
+[![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
@@ -89,7 +90,7 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 1.0.2
+欢迎使用 Ban-Peers 1.0.3
 
 用法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
                 [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O]
@@ -150,7 +151,7 @@ ban_peers -h
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 1.0.2
+欢迎使用 Ban-Peers 1.0.3
 没有输入 ipfilter，尝试从配置文件加载
 从配置文件加载 ipfilter 失败，什么都没有找到
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
@@ -169,7 +170,7 @@ X:\uTorrent
 
 ...
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-config
-欢迎使用 Ban-Peers 1.0.2
+欢迎使用 Ban-Peers 1.0.3
 开始保存配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 保存参数 "ipfilter = X:\uTorrent"
 保存参数 "port = 12345"
@@ -178,7 +179,7 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-con
 
 ...
 C:\Users\username>ban_peers -p 54321
-欢迎使用 Ban-Peers 1.0.2
+欢迎使用 Ban-Peers 1.0.3
 没有输入 ipfilter，尝试从配置文件加载
 开始加载配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 加载参数 "ipfilter = X:\uTorrent"
@@ -261,4 +262,4 @@ C:\Users\username>ban_peers -p 54321
 [SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
 # License
-Ban-Peers 以 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE) 许可发布。
+Ban-Peers 以 [MIT许可](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE) 发布。

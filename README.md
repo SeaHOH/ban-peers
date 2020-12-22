@@ -1,4 +1,5 @@
 # Ban-Peers (English/[中文](https://github.com/SeaHOH/ban-peers/blob/master/README_zh.md))
+[![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
@@ -103,7 +104,7 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 1.0.2
+Welcome using Ban-Peers 1.0.3
 
 usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
                  [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
@@ -168,7 +169,7 @@ Optional Arguments:
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 1.0.2
+Welcome using Ban-Peers 1.0.3
 No ipfilter has be inputted, try load from config file
 Load ipfilter from config file fail, found nothing
 Please input uTorrent settings folder path or ipfilter file path:
@@ -187,7 +188,7 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 ...
 $ ban_peers -p 12345 -a username:password /var/lib/utserver --save-config
-Welcome using Ban-Peers 1.0.2
+Welcome using Ban-Peers 1.0.3
 Start saving config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Save argument "ipfilter = /var/lib/utserver"
 Save argument "port = 12345"
@@ -196,7 +197,7 @@ Save argument "authorization = username:password"
 
 ...
 $ ban-peers -p 54321
-Welcome using Ban-Peers 1.0.2
+Welcome using Ban-Peers 1.0.3
 No ipfilter has be inputted, try load from config file
 Start loading config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Load argument "ipfilter = /var/lib/utserver"
@@ -289,4 +290,4 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
 [SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
 # License
-Ban-Peers is released under the [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).
+Ban-Peers is released under the [MIT License](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).
