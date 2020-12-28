@@ -1,5 +1,7 @@
 # Ban-Peers (English/[中文](https://github.com/SeaHOH/ban-peers/blob/master/README_zh.md))
 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
+[![python version](https://img.shields.io/badge/python->=_3.7.0-blue)](https://www.python.org/downloads/)
+[![internationalization and localization](https://img.shields.io/badge/i18n-en_|_zh__CN-blue)](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
@@ -67,7 +69,7 @@ module (output/python/compress)
 - Python >= 3.7
 - Zip safe
 - Support call with `python -m`
-- Support I18N，welcome [helps localization](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
+- Support i18n，welcome [helps localization](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
 # Usage
 First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for

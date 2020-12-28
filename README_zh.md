@@ -1,5 +1,7 @@
 # Ban-Peers ([English](https://github.com/SeaHOH/ban-peers/blob/master/README.md)/中文)
 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
+[![python version](https://img.shields.io/badge/python->=_3.7.0-blue)](https://www.python.org/downloads/)
+[![internationalization and localization](https://img.shields.io/badge/i18n-en_|_zh__CN-blue)](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 [![release status](https://img.shields.io/github/v/release/SeaHOH/ban-peers?include_prereleases&sort=semver)](https://github.com/SeaHOH/ban-peers/releases)
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
@@ -57,7 +59,7 @@
 - Python >= 3.7
 - Zip 安全
 - 支持 `python -m` 调用
-- 支持 I18N，欢迎[参与本地化](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
+- 支持 i18n，欢迎[参与本地化](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
 # 使用
 首先，必须在 μTorrent 设置中启用网页界面；然后运行 Ban-Peers 于指定的 ipfilter.dat 文件。
