@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.3'
+__version__ = '1.0.4'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
@@ -21,7 +21,7 @@ __webpage__ = 'https://github.com/SeaHOH/ban-peers'
 
 import sys
 if sys.version_info < (3, 7):
-    raise RuntimeError('Please run with Python3.7 and above!')
+    raise RuntimeError('Please run with Python 3.7 and above!')
 
 import os
 import re
@@ -134,7 +134,7 @@ LEECHER_OTHER = re.compile('''
 ^(?:
     caca              | # Cacaoweb
     [Ff]lash[Gg]      | # FlashGet (FG)
-    .+?ransp          | # Net Transport (NX) - need more infomation
+    [Nn]et\s?[Tt]ran  | # Net Transport (NX)
     [Qq]{2}           | # QQ (QD) [Dead?]
     [Tt]uo            | # TuoTu (TT) [Dead?]
     Unknown\s(?:
@@ -717,8 +717,7 @@ class UTorrentWebAPI:
             self._statistics_refused.pop(hash, None)
         for torrent in torrents.get('torrents') or torrents.get('torrentp', []):
             torrent = List2Attr(torrent, 'torrent')
-            if (torrent.peers_connected or torrent.seeds_connected) and \
-                    (self.check_private or not self.is_private(torrent.hash)):
+            if (torrent.peers_connected or torrent.seeds_connected):
                 yield torrent
 
     def get_files(self, hash:str) -> Iterable[List2Attr]:
@@ -803,8 +802,10 @@ class UTorrentWebAPI:
                     'ulsize': make_size_human(peer.uploaded)})
 
     def check_peers(self) -> None:
-        def log(msg):
+        def log(msg, force=False):
             ip = peer.ip
+            if force:
+                self.log_ip.pop(ip, None)
             try:
                 self.log_ip.pop(ip)
             except KeyError:
@@ -819,9 +820,12 @@ class UTorrentWebAPI:
         reasons = []
         ct = time.monotonic()
         for torrent in self.get_torrents():
+            hash = torrent.hash
+            if not self.check_private and self.is_private(hash):
+                continue
+            private = self.check_private and self.is_private(hash)
             size_millesimal = torrent.size // 1000
             seeding = torrent.progress >= 1000  # uTorrent bug
-            hash = torrent.hash
             # Relieve a rare uTorrent bug
             # torrent download is choked after a few minutes started
             # first 5 pieces, downloaded mod piece_size == 0
@@ -856,6 +860,7 @@ class UTorrentWebAPI:
             ratio_sl = 10
             if seeding:
                 self._statistics_started.pop(hash, None)
+                self._statistics_refused.pop(hash, None)
             elif self.check_fake_progress or self.check_serious_leech:
                 started = self._statistics_started.setdefault(hash, ct)
                 files = list(self.get_files(hash))
@@ -952,10 +957,7 @@ class UTorrentWebAPI:
                 ### Start check client name
                 anonymous = False
                 suspicious = ''
-                if sum(1 if ord(c) < 128 else -1 for c in peer.client) < 0:
-                    anonymous = True
-                    peer.client = repr(peer.client)  # For better print
-                elif peer.port >= 65000 and 'd' in peer.flags and \
+                if peer.port >= 65000 and 'd' in peer.flags and \
                         relevance == 0 and peer.country == 'CN' and \
                         'Transmission' in peer.client:
                     # Chinese Offline Download Servers, almost are leech clients
@@ -980,6 +982,11 @@ class UTorrentWebAPI:
                     elif seeding:
                         reasons.append('Seeding')
                         reasons.append('XunLei')
+                elif private:  # Skip all checks followed this
+                    continue
+                elif sum(1 if ord(c) < 128 else -1 for c in peer.client) < 0:
+                    anonymous = True
+                    peer.client = repr(peer.client)  # For better print
                 elif LEECHER_PLAYER.search(peer.client):
                     suspicious = 'Player'
                     log(_('player'))
@@ -1017,6 +1024,8 @@ class UTorrentWebAPI:
                             peer.downloaded * 5 < peer.uploaded or
                             peer.downloaded * 10 < relevance):
                         reasons.append('Leecher')
+                elif self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
+                    log(_('unknown client'))
                 if suspicious and not reasons and peer.uploaded > 0 and (
                         torrent.availability > 20 or
                         torrent.downspeed - peer.downspeed > kb.m1):
@@ -1055,7 +1064,7 @@ class UTorrentWebAPI:
                                 ct - t > peer.downloaded / kb.m1 * 10:
                             # Did not reached conditions within 10X seconds
                             # X means it had downloaded X MiB from peer
-                            log(_('highly suspected of leecher'))
+                            log(_('highly suspected of leecher'), True)
                             reasons.append('Suspected')
                             reasons.append('Leecher')
                             t = None
@@ -1074,13 +1083,11 @@ class UTorrentWebAPI:
                     elif allow_banned_refused_upload and \
                             ct - t > self.time_allowed_refuse:
                         log(_('refused upload [%(availability).3f]')
-                            % {'availability': torrent.availability})
+                            % {'availability': torrent.availability}, True)
                         reasons.append('Refused')
                         allow_banned_refused_upload = False  # One peer a loop
                         t = None
                     self._statistics_refused[hash][ip_port] = t
-                if self.log_unknown and CLIENT_UNKNOWN.search(peer.client):
-                    log(_('unknown client'))
                 if reasons:
                     try:
                         self.ban_push(hash, peer, ' '.join(reasons))
@@ -1390,7 +1397,7 @@ def main(argv=None):
     parser.add_argument('-R', '--private-check',
                         action='store_true',
                         help=_(
-                        'Enable checking for private torrents'))
+                        'Enable checking (partly) for private torrents'))
     parser.add_argument('-U', '--log-unknown',
                         action='store_true',
                         help=_(
