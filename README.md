@@ -10,6 +10,9 @@ Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu,
 QQDownload, Offline download servers, other infamous leech clients, and BT
 players, fake clients, who reported fake progress, the fact in serious leech.
 
+The mainline BitTorrent client use the same code as μTorrent, so this tool also
+effect on it.
+
 Execute checking per 10 seconds, the banned time can be specified by the start-up
 parameters, default is 12 hours. In some cases, temporary banned for 1 hour, if
 the torrent's AVAILABILITY greater than 20, or its DOWNLOAD SPEED overrun peer's
@@ -39,7 +42,7 @@ work, please recommend it to your friends, Thanks.
 - Report fake progress, most of the results are due to poor connection leads,
   in smooth connection case, I have seek to ensure there is no false positives.
   Even the peers due to network factor have be banned, there is no bad influence
-  for both normal use the bittorrent network, unless that peer is the only seed.
+  for both normal use the BitTorrent network, unless that peer is the only seed.
 - Refused upload, peer never transport even 1 byte valid data due to all causes,
   e.g. deliberately leech, network poor, bugs or unreasonable settings of
   μTorrent itself etc. So, if the situation has not changed at a period of time
