@@ -83,7 +83,7 @@ def find(domain, localedir=None, languages=None, all=False):
 
 
 def translation(domain, localedir=None, languages=None,
-                class_=None, fallback=False, codeset=gettext._unspecified):
+                class_=None, fallback=False, *args, **kwargs):
     if class_ is None:
         class_ = gettext.GNUTranslations
     mofiles = find(domain, localedir, languages, all=True)
@@ -116,15 +116,6 @@ def translation(domain, localedir=None, languages=None,
         # are not used.
         import copy
         t = copy.copy(t)
-        if codeset is not gettext._unspecified:
-            import warnings
-            warnings.warn('parameter codeset is deprecated',
-                          DeprecationWarning, 2)
-            if codeset:
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('ignore', r'.*\bset_output_charset\b.*',
-                                            DeprecationWarning)
-                    t.set_output_charset(codeset)
         if result is None:
             result = t
         else:

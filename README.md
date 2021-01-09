@@ -23,7 +23,8 @@ in ipfilter, they will be stored as-is.
 
 There is [a gift](https://github.com/SeaHOH/ban-peers/discussions/1) to the users
 of μTorrent 3 classic desktop free version, it wrote in Chinese, you can read via
-a translator (e.g. translate.google.com). There is also [a similar article](https://www.sb-innovation.de/showthread.php?34487-Clean-uTorrent)
+a translator (e.g. [Google Translate](https://translate.google.com/translate?sl=zh-CN&tl=en&u=https://github.com/SeaHOH/ban-peers/discussions/1)).
+There is also [a similar article](https://www.sb-innovation.de/showthread.php?34487-Clean-uTorrent)
 (see part **Technical information**) wrote in English.
 
 Resist leech strongly, this is our own rights. If you feels Ban-Peers a good

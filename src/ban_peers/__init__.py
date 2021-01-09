@@ -8,7 +8,7 @@ Checking & banning BitTorrent leech peers via Web API, remove ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
