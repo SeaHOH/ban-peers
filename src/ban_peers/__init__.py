@@ -4,7 +4,7 @@
 _ = lambda s: s
 
 __doc__ = _("""\
-Checking & banning BitTorrent leech peers via Web API, remove ads, working for
+Checking & banning BitTorrent leech peers via Web API, remove Ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
@@ -231,10 +231,12 @@ ANTI_ADS_SETTINGS = [(k, True) for k in (
     'check_update',
     'check_update_beta',
     'enable_share',
-    'distributed_share.enable',
     'ftenabled',
     'lrecenabled',
+    #'wallet_enabled',
     'bt.enable_pulse',
+    'distributed_share.enable',
+    'gui.plus_upsell_foreground',
     'gui.report_problems',
     'gui.show_av_icon',
     'gui.show_devices',
@@ -247,8 +249,6 @@ ANTI_ADS_SETTINGS = [(k, True) for k in (
     'gui.show_plus_conv_upsell',
     'gui.show_plus_upsell',
     'gui.show_plus_upsell_nodes',
-    'gui.plus_upsell_foreground',
-    'offers.enabled',
     'offers.adresource_enabled',
     'offers.adresource_kill_enabled',
     'offers.backup_left_rail_offer_enabled',
@@ -259,6 +259,7 @@ ANTI_ADS_SETTINGS = [(k, True) for k in (
     'offers.cfu_sponsored_torrent_offer_enabled',
     'offers.content_offer_autoexec',
     'offers.dlive_enabled',
+    'offers.enabled',
     'offers.featured_content_badge_enabled',
     'offers.featured_content_notifications_enabled',
     'offers.featured_content_rss_enabled',
@@ -270,12 +271,11 @@ ANTI_ADS_SETTINGS = [(k, True) for k in (
     'offers.show_gdpr_consent',
     'offers.show_tip_now',
     'offers.sponsored_torrent_offer_enabled',
-    'offers.superad_enabled',
     'offers.superad_adson',
+    'offers.superad_enabled',
     'offers.tronTV_enabled',
     'offers.upgrade_toolbar',
     'offers.wallet_ui_enabled',
-    #'wallet_enabled',
 )]
 
 try:
@@ -1405,12 +1405,12 @@ def main(argv=None):
     parser.add_argument('-A', '--remove-ads',
                         action='store_true',
                         help=_(
-                        'Remove ads via set Advanced Settings, only working '
+                        'Remove Ads via set Advanced Settings, only working '
                         'for localhost, and to fail in older uTorrent'))
     parser.add_argument('-O', '--no-close-pairing',
                         action='store_true',
                         help=_(
-                        'Don\'t turn off Web Pairing setting after'))
+                        'Don\'t turn off Web Pairing setting after remove Ads'))
     cgroup = parser.add_mutually_exclusive_group()
     cgroup.add_argument('-s', '--save-config', nargs='?', dest='config',
                         type=config.FileType('w', encoding='utf-8'),

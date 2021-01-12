@@ -6,7 +6,7 @@
 [![code size](https://img.shields.io/github/languages/code-size/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers)
 
 Ban-Peers wrote in Python, it is checking & banning BitTorrent leech peers via
-Web API, remove ads, working for μTorrent. The main banned are XunLei, Baidu,
+Web API, remove Ads, working for μTorrent. The main banned are XunLei, Baidu,
 QQDownload, Offline download servers, other infamous leech clients, and BT
 players, fake clients, who reported fake progress, the fact in serious leech.
 
@@ -30,7 +30,7 @@ There is also [a similar article](https://www.sb-innovation.de/showthread.php?34
 Resist leech strongly, this is our own rights. If you feels Ban-Peers a good
 work, please recommend it to your friends, Thanks.
 
-# Notices
+## Notices
 - Does not work in old versions of μTorrent which did not provided API `getpeers`.
 - **Please use this script in local network**, μTorrent Web API does not
   support HTTPS connections, it is not safe.
@@ -39,7 +39,7 @@ work, please recommend it to your friends, Thanks.
 - I took preventive measures, if you stiil found a normal peer has been banned,
   please tell us via [Issues board](https://github.com/SeaHOH/ban-peers/issues).
 
-# Special Explanation
+## Special Explanation
 - Report fake progress, most of the results are due to poor connection leads,
   in smooth connection case, I have seek to ensure there is no false positives.
   Even the peers due to network factor have be banned, there is no bad influence
@@ -50,7 +50,7 @@ work, please recommend it to your friends, Thanks.
   after refused flag has been checked, temporary banned to release its occupied
   connections, that helps connect to other peers which may upload smoothly.
 
-# Installation
+## Installation
 Install from 
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
 [![package format](https://img.shields.io/pypi/format/ban-peers)](https://pypi.org/project/ban-peers/#files)
@@ -69,13 +69,13 @@ module (output/python/compress)
 
     python setup.py bdist_pyz -compress -output ban_peers -python python38
 
-# Compatibility
+## Compatibility
 - Python >= 3.7
 - Zip safe
 - Support call with `python -m`
 - Support i18n，welcome [helps localization](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
-# Usage
+## Usage
 First, Web UI must be enabled in μTorrent settings; then running Ban-Peers for
 specified ipfilter.dat file.
 
@@ -117,7 +117,7 @@ usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
                  [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h] [-v]
                  [IPFILTER-PATH]
 
-Checking & banning BitTorrent leech peers via Web API, remove ads, working for
+Checking & banning BitTorrent leech peers via Web API, remove Ads, working for
 uTorrent.
 
 Positional Arguments:
@@ -156,10 +156,10 @@ Optional Arguments:
     -U, --log-unknown
                     Logging unknown clients
     -A, --remove-ads
-                    Remove ads via set Advanced Settings, only working for
+                    Remove Ads via set Advanced Settings, only working for
                     localhost, and to fail in older uTorrent
     -O, --no-close-pairing
-                    Don't turn off Web Pairing setting after
+                    Don't turn off Web Pairing setting after remove Ads
     -s [CONFIG-FILE], --save-config [CONFIG-FILE]
                     Save current arguments to a config file except "--remove-
                     ads", "--help" and "--version". Save to default location
@@ -218,12 +218,12 @@ Load argument "authorization = username:password"
 - Pause: pause checking, it is useful when manually modify ipfilter.dat.
 - Proceed: just proceed checking.
 
-# Got troubles/ideas
+## Got troubles/ideas
 Visit the [Discussions board](https://github.com/SeaHOH/ban-peers/discussions)
 and post them, maybe someone can help you. If you are not sure wether it is an
 issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH/ban-peers/issues).
 
-# Known Issues
+## Known Issues
 - Integers in data form which have be received from Web API will be converted to
   32-bit signed number，it caused numeric overflow. Integer numeric from 2G to
   4G will overflow as -2G to 0, then loop overflow to 0 per 4G. Ban-Peers has
@@ -235,7 +235,7 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
 - There is a rare uTorrent bug choked torrent downloading, we have relieved it
   by restart download, first 5 pieces will be checked now.
 
-# What μTorrent settings should have been modified
+## What μTorrent settings should have been modified
 - Global
 
     **bt.use_rangeblock**, using this tool, build-in range block (by hash error)
@@ -248,8 +248,8 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
     **webui.allow_pairing**, modify more settings have to got pairing, μTorrent
                              will show a pop-up of pairing request, please
                              confirm carefully.  
-    `True` before modify ads settings  
-    `False` after modify ads settings, can also use parameters `-O` or
+    `True` before modify Ads settings  
+    `False` after modify Ads settings, can also use parameters `-O` or
             `--no-close-pairing` to do not disable it
 
     **gui.show_plus_upsell_nodes**, μTorrent sidebar upgrade tips will be reset
@@ -260,7 +260,7 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
     `True` when start-up，need to use parameters `-C` or `--resolve-country`,
            not every time
 
-    **Other ads settings**, modify some settings have to got pairing.  
+    **Other Ads settings**, modify some settings have to got pairing.  
     For specific values see the part of `ANTI_ADS_SETTINGS` in source code, when
     start-up, modify all settings at once after got pairing, need to use
     parameters `-A` or `--remove-ads`, not every time
@@ -273,7 +273,7 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
     `1048576` download size less than 1 GiB, limit to 1 MiB/s  
     `524288` download size less than 10 GiB, limit to 512 KiB/s
 
-# Related Projects
+## Related Projects
 - μTorrent
 
     https://github.com/ShenHongFei/utorrent-block-xunlei  
@@ -289,11 +289,11 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
     https://github.com/Od1gree/btDownloadManager  
     https://github.com/outline941/qb-ban-xunlei  
 
-# Thanks
+## Thanks
 [c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
 [ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
 [isimonov](https://github.com/isimonov/disable-uTorrent-ads)  
 [SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
-# License
+## License
 Ban-Peers is released under the [MIT License](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE).

@@ -23,14 +23,14 @@
 
 极力抵制吸血，这是我们应有的权利。如果你觉得 Ban-Peers 还不错，请向朋友推荐它，谢谢。
 
-# 注意事项
+## 注意事项
 - 无法在未提供 `getpeers` API 的旧版本 μTorrent 中正常工作。
 - **请在本地网络内使用此脚本**，μTorrent 网页 API 不支持 HTTPS 连接，它并不安全。
 - 如果无法接受频繁读写 ipfilter.dat 文件，可以将它软链接到内存盘。
 - 虽然已采取一些预防措施，如果你仍然发现有正常的对端被错误屏蔽，
   请反馈到 [Issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
-# 特别说明
+## 特别说明
 - 汇报虚假进度，其大部分结果都是由于连接不畅导致，已尽量确保连接顺畅情况下不误报。
   但即使屏蔽掉网络因素误报的对端，也不会影响双方正常使用 BitTorrent 网络，
   除非是处于极端状况下，即这个对端恰好是仅有的种源。
@@ -39,7 +39,7 @@
   如情况仍未改变，则暂时屏蔽掉此对端释放其占用的连接数，有助于连接上其它能够顺利
   上传的对端。
 
-# 安装
+## 安装
 安装自
 [![version](https://img.shields.io/pypi/v/ban-peers)](https://pypi.org/project/ban-peers/)
 [![package format](https://img.shields.io/pypi/format/ban-peers)](https://pypi.org/project/ban-peers/#files)
@@ -57,13 +57,13 @@
 
     python setup.py bdist_pyz -compress -output ban_peers -python python38
 
-# 兼容性
+## 兼容性
 - Python >= 3.7
 - Zip 安全
 - 支持 `python -m` 调用
 - 支持 i18n，欢迎[参与本地化](https://github.com/SeaHOH/ban-peers/blob/master/src/ban_peers/i18n/locale)
 
-# 使用
+## 使用
 首先，必须在 μTorrent 设置中启用网页界面；然后运行 Ban-Peers 于指定的 ipfilter.dat 文件。
 
 IP 屏蔽配置文件 ipfilter.dat，其通常位于以下几种情况对应的路径。
@@ -198,11 +198,11 @@ C:\Users\username>ban_peers -p 54321
 - 暂停：暂停检查，对于手动修改 ipfilter.dat 非常有用。
 - 恢复：只是恢复检查。
 
-# 遇到麻烦/有其它想法
+## 遇到麻烦/有其它想法
 访问 [Discussions 板块](https://github.com/SeaHOH/ban-peers/discussions)并贴出它们，
 也许有人能够帮到你。如果你不确定是否是程序本身有问题，可以直接反馈到 [Issues 板块](https://github.com/SeaHOH/ban-peers/issues)。
 
-# 已知问题
+## 已知问题
 - 网页 API 返回的对端数据中，数值被转换成 32 位有符号数，这会导致数值溢出。2G
   到 4G 会溢出成 -2G 到 0，然后循环，每 4G 又会溢出到 0。Ban-Peers 已针对此问题
   采取了一些缓解措施，只要下载任务是在 Ban-Peers 运行以后添加开始的，就不会因此
@@ -212,7 +212,7 @@ C:\Users\username>ban_peers -p 54321
 - 有一个罕见的 μTorrent bug 会阻塞下载，已采取重新启动的方法来缓解它，当前仅检查
   头 5 个下载的区块。
 
-# 修改了哪些 μTorrent 配置
+## 修改了哪些 μTorrent 配置
 - 全局
 
     **bt.use_rangeblock**，使用此工具时，可停用内建自动范围屏蔽 (根据校验错误)。  
@@ -243,7 +243,7 @@ C:\Users\username>ban_peers -p 54321
     `1048576` 下载大小大于 1 GiB，限制 1 MiB/s  
     `524288` 下载大小大于 10 GiB，限制 512 KiB/s
 
-# 相关项目
+## 相关项目
 - μTorrent
 
     https://github.com/ShenHongFei/utorrent-block-xunlei  
@@ -259,11 +259,11 @@ C:\Users\username>ban_peers -p 54321
     https://github.com/Od1gree/btDownloadManager  
     https://github.com/outline941/qb-ban-xunlei  
 
-# 感谢
+## 感谢
 [c0re100](https://github.com/c0re100/qBittorrent-Enhanced-Edition)  
 [ShenHongFei](https://github.com/ShenHongFei/utorrent-block-xunlei)  
 [isimonov](https://github.com/isimonov/disable-uTorrent-ads)  
 [SchizoDuckie](https://github.com/SchizoDuckie/PimpMyuTorrent)  
 
-# License
+## License
 Ban-Peers 以 [MIT许可](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE) 发布。

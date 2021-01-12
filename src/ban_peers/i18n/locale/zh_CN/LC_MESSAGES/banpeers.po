@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ban-Peers 0.9.1\n"
 "Report-Msgid-Bugs-To: seahoh@gmail.com\n"
-"POT-Creation-Date: 2021-01-05 17:30+0800\n"
-"PO-Revision-Date: 2021-01-05 17:30+0800\n"
+"POT-Creation-Date: 2021-01-12 12:12+0800\n"
+"PO-Revision-Date: 2021-01-12 12:12+0800\n"
 "Last-Translator: SeaHOH <seahoh@gmail.com>\n"
 "Language-Team: Chinese (simplified)\n"
 "Language: zh_CN\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: ban_peers/__init__.py:6
 msgid ""
-"Checking & banning BitTorrent leech peers via Web API, remove ads, working "
+"Checking & banning BitTorrent leech peers via Web API, remove Ads, working "
 "for\n"
 "uTorrent.\n"
 msgstr ""
@@ -300,13 +300,13 @@ msgstr "将未知客户端记入日志"
 
 #: ban_peers/__init__.py:1408
 msgid ""
-"Remove ads via set Advanced Settings, only working for localhost, and to "
+"Remove Ads via set Advanced Settings, only working for localhost, and to "
 "fail in older uTorrent"
 msgstr ""
 "通过高级设置移除广告，仅工作于本地主机，也无法工作于较旧版本的 uTorrent"
 
 #: ban_peers/__init__.py:1413
-msgid "Don't turn off Web Pairing setting after"
+msgid "Don't turn off Web Pairing setting after remove Ads"
 msgstr "移除广告后，不关闭网络配对配置项"
 
 #: ban_peers/__init__.py:1418 ban_peers/__init__.py:1428

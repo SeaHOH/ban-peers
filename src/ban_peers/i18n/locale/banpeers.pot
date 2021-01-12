@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ban-Peers 1.0.2\n"
 "Report-Msgid-Bugs-To: seahoh@gmail.com\n"
-"POT-Creation-Date: 2021-01-05 17:30+0800\n"
+"POT-Creation-Date: 2021-01-12 12:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: ban_peers/__init__.py:6
 msgid ""
-"Checking & banning BitTorrent leech peers via Web API, remove ads, working "
+"Checking & banning BitTorrent leech peers via Web API, remove Ads, working "
 "for\n"
 "uTorrent.\n"
 msgstr ""
@@ -292,12 +292,12 @@ msgstr ""
 
 #: ban_peers/__init__.py:1408
 msgid ""
-"Remove ads via set Advanced Settings, only working for localhost, and to "
+"Remove Ads via set Advanced Settings, only working for localhost, and to "
 "fail in older uTorrent"
 msgstr ""
 
 #: ban_peers/__init__.py:1413
-msgid "Don't turn off Web Pairing setting after"
+msgid "Don't turn off Web Pairing setting after remove Ads"
 msgstr ""
 
 #: ban_peers/__init__.py:1418 ban_peers/__init__.py:1428
