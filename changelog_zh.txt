@@ -1,0 +1,86 @@
+v1.0.5
+  错误修复:
+    Python 3.7 兼容性已损坏，issues #6。 感谢 @ArcticLampyrid
+
+v1.0.4
+  改进:
+    减少对于私有种子无用的检查
+  错误修复:
+    某些情况下未知客户端没有被记录
+
+v1.0.3
+  改进:
+    更新对端鉴别，部分信息来自 https://github.com/webtorrent/bittorrent-peerid
+
+v1.0.2
+  增强:
+    缓解一个罕见的 μTorrent 错误，下载任务可能会在开始后几分钟被阻塞
+
+v1.0.1
+  改进:
+    移除不必要的网络请求
+    针对匿名对端始终检查拒绝上传
+    减少严重吸血检查误报，需要开启拒绝上传检查
+
+v1.0.0
+  改进:
+    更新文档
+
+v0.9.x
+  增强:
+    更新依赖 Python 最低版本至 3.7
+    添加支持 i18n
+    添加本地化指南
+    添加支持构建 Zip App
+    添加 argparse 模块格式化帮助信息显示 Unicode 字符的兼容性
+    添加命令行界面可选参数:
+      --time-allowed-refuse MINUTES     屏蔽拒绝上传对端前等待的分钟数
+      --no-refused-upload-check         默认拒绝上传的对端将被临时屏蔽，用此参数禁用
+      --save-config [CONFIG-FILE]       保存输入的参数到一个配置文件
+      --load-config [CONFIG-FILE]       从一个配置文件载入参数
+  改进:
+    更多的和恰当的检查条件
+    针对匿名对端始终检查严重吸血
+    更好的日志记录
+    在附加检查中，对久远的或弱势的 Torrent 使用高级别的阀值
+    文档添加描述哪些 μTorrent 配置会被修改
+  错误修复:
+    保存 0 个 IP 到 ipfilter 时失败
+    缓解 μTorrent 网络界面返回的 JSON 数据中，某些整数会溢出
+    回报虚假进度检查在进度 100% 时 损坏
+    帮助描述包含多余部分
+    PyPI 上的描述包含错误的文本
+    一些其它错误
+
+v0.6.x
+  增强:
+    添加命令行界面可选参数:
+      --remove-ads              用于移除 μTorrent's 广告
+      --no-close-pairing        移除广告后，默认关闭网络配对配置项，用此参数取消关闭
+  改进:
+    更好的日志记录、帮助描述和代码注释
+    及时的更新 ipfilter
+    重构某些代码
+  错误修复:
+    某些情况会错误屏蔽 Bittorrent 客户端
+
+v0.1.x
+  增强:
+    添加命令行界面可选参数:
+      --no-fake-progress-check  此附加检查可禁用
+      --no-serious-leech-check  此附加检查可禁用
+      --no-xunlei-reprieve      直接屏蔽迅雷，不进行更多的检查
+      --private-check           默认不检查私有种子，用此参数启用
+      --resolve-country         设置 μTorrent 配置 `peer.resolve_country` 为 true
+      --log-unknown             为收集数据
+    μTorrent 配置 `bt.use_rangeblock` 将在启动时被禁用
+  改进:
+    使正则及其注释有更好的可读性
+    更多的和恰当的对端鉴别
+    更多的和恰当的检查条件
+    某些情况只是临时屏蔽一小时
+    允许 μTorrent 没有配置 ipfilter.dat 文件
+  错误修复:
+    始终会设置控制台列属性 (非Windows)
+    回报虚假进度检查错误
+    一些其它错误

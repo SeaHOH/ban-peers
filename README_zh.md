@@ -243,6 +243,9 @@ C:\Users\username>ban_peers -p 54321
     `1048576` 下载大小大于 1 GiB，限制 1 MiB/s  
     `524288` 下载大小大于 10 GiB，限制 512 KiB/s
 
+## 更新日志
+请查看 [changelog_zh.txt](https://github.com/SeaHOH/ban-peers/blob/master/changelog_zh.txt).
+
 ## 相关项目
 - μTorrent
 

@@ -1,0 +1,86 @@
+v1.0.5
+  Bug fix:
+    Compatibility of Python 3.7 has broken, issues #6. Thanks to @ArcticLampyrid
+
+v1.0.4
+  Improvements:
+    Decrease needless checking for private torrents
+  Bug fix:
+    In some cases, unknown clients are not logged
+
+v1.0.3
+  Improvements:
+    Update peer identification, some informations come from https://github.com/webtorrent/bittorrent-peerid
+
+v1.0.2
+  Enhancements:
+    Relieve a rare uTorrent bug, download is choked after a few minutes started
+
+v1.0.1
+  Improvements:
+    Strip needless requests
+    Always check refused upload for anonymous peers
+    Decrease false positives of serious leech, need enable refused upload check
+
+v1.0.0
+  Improvements:
+    Update docs
+
+v0.9.x
+  Enhancements:
+    Update dependency of mini Python to 3.7
+    Add support for i18n
+    Add guides for localization
+    Add support build Zip App
+    Add argparse's help format displaying compatibility of Unicode Basic Multilingual Plane
+    Add CLI optional arguments:
+      --time-allowed-refuse MINUTES     wait minutes before banned refused upload peer
+      --no-refused-upload-check         by default, refused upload peer will be temporary banned, use this to disable
+      --save-config [CONFIG-FILE]       save inputed arguments to a config file
+      --load-config [CONFIG-FILE]       load arguments from a config file
+  Improvements:
+    More and right conditions of checking
+    Always check serious leech for anonymous peers
+    Better logging
+    High level thresholds are used for older/weaker Torrents in additional checking
+    Add docs of what μTorrent settings should have been modified
+  Bug fix:
+    Saving zero IPs to ipfilter failed
+    Relieve integer in uTorrent WebUI returned JSON data would be overflowed
+    Fake progress checking broken in case 100%
+    Help description has superfluous part
+    Wrong description string of PyPI
+    A few other bugs
+
+v0.6.x
+  Enhancements:
+    Add CLI optional arguments:
+      --remove-ads              used to remove μTorrent's Ads
+      --no-close-pairing        by default, turn off Web Pairing setting after remove Ads, use this to keep turn on
+  Improvements:
+    Better logging, help descriptions and code comments
+    Update ipfilter timely
+    Refactor some codes
+  Bug fix:
+    Wrong banned Bittorrent client in some case
+
+v0.1.x
+  Enhancements:
+    Add CLI optional arguments:
+      --no-fake-progress-check  the additional checking can be disabled
+      --no-serious-leech-check  the additional checking can be disabled
+      --no-xunlei-reprieve      banned XunLei directly, no more checking
+      --private-check           by default, private torrrents are not checked, use this to enable
+      --resolve-country         set μTorrent setting `peer.resolve_country` to true
+      --log-unknown             for collection using
+    μTorrent setting `bt.use_rangeblock` was disabled at start-up
+  Improvements:
+    Make nicer looking RE's/comments
+    More and right peer identification
+    More and right conditions of checking
+    Temporary banned one hour for some cases
+    Allow the ipfilter.dat file does not existed now
+  Bug fix:
+    Always set shell columns (non-Windows)
+    Fake progress checking errors
+    A few other bugs

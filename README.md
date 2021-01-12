@@ -273,6 +273,9 @@ issue by Ban-Peers itself, just post to [Issues board](https://github.com/SeaHOH
     `1048576` download size less than 1 GiB, limit to 1 MiB/s  
     `524288` download size less than 10 GiB, limit to 512 KiB/s
 
+## Change Log
+Please see the [changelog.txt](https://github.com/SeaHOH/ban-peers/blob/master/changelog.txt).
+
 ## Related Projects
 - μTorrent
 
