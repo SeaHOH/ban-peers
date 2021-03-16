@@ -188,6 +188,7 @@ CLIENT_UNKNOWN = re.compile('''
     KG                | # KGet [Dead]
     LC                | # LeechCraft
     LH                | # LH-ABC [Dead]
+    Lr                | # LibreTorrent
     #M\d-\d           | # Bram's old BitTorrent and many other clients [Dead]
     MG                | # MediaGet
     ML                | # MLdonkey
@@ -781,6 +782,7 @@ class UTorrentWebAPI:
 
     def ban_push(self, hash:str, peer:List2Attr, reason:str='') -> None:
         ct = int(time.time())
+        self._ban_push_cnt += 1
         ip = peer.ip
         try:
             d = self._statistics.pop(ip)
@@ -1138,6 +1140,7 @@ class UTorrentWebAPI:
             if not self.running:
                 break
             err_cr = None
+            self._ban_push_cnt = 0
             if not pause:
                 try:
                     self.check_peers()
@@ -1174,7 +1177,7 @@ class UTorrentWebAPI:
                             # Remove upsell tip in the sidebar
                             pair.set_setting('gui.show_plus_upsell_nodes', False)
                     disconnected = False
-            for __ in range(5):
+            for __ in range(max(5 - self._ban_push_cnt, 1)):
                 if show_operations:
                     print(CLL, end='')
                     msgs = [ss and self.statistics or _('Choose your operation: '

@@ -124,7 +124,7 @@ setup(
                                    .replace('\n', ' ').strip(),
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
-    keywords='BitTorrent uTorrent anti-leech ban block XunLei anti-ads',
+    keywords='BitTorrent uTorrent anti-leech ban block XunLei anti-Ads',
     package_dir={'': src},
     package_data={package: ['vendor.txt'], i18n: ['locale/*/*/*.[mp]o']},
     packages=packages,
