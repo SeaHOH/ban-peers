@@ -8,11 +8,11 @@ Checking & banning BitTorrent leech peers via Web API, remove Ads, working for
 uTorrent.
 """)
 __app_name__ = 'Ban-Peers'
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 __author__ = 'SeaHOH'
 __email__ = 'seahoh@gmail.com'
 __license__ = 'MIT'
-__copyright__ = '2020 SeaHOH'
+__copyright__ = '2020-2021 SeaHOH'
 __py_min__ = '3.7'
 __py_max__ = '3.9'
 __webpage__ = 'https://github.com/SeaHOH/ban-peers'
@@ -205,7 +205,7 @@ CLIENT_UNKNOWN = re.compile('''
     RZ                | # RezTorrent [Dead?]
     SB                | # ~Swiftbit [Dead]
     SM                | # SoMud [Dead]
-    SP36              | # BitSpirit v3.6
+    SP(?:36|/3\.6)    | # BitSpirit v3.6
     ST                | # SymTorrent [Dead]
     st                | # sharktorrent [Dead]
     tT                | # tTorrent
@@ -545,7 +545,10 @@ class UTorrentWebAPI:
                 log_header_fmt:str='%H:%M:%S', xunlei_reprieve:bool=True,
                 check_fake_progress:bool=True, check_serious_leech:bool=True,
                 check_refused_upload:bool=True, check_private:bool=False,
-                log_unknown:bool=False) -> None:
+                public_mode:bool=False, log_unknown:bool=False) -> None:
+        if public_mode:
+            print(_('Warning: public mode is on, '
+                    'apply fully checking to private torrents!!!'))
         while not ipfilter:
             ipfilter = input(_('Please input uTorrent settings folder path '
                                'or ipfilter file path:\n'))
@@ -566,6 +569,7 @@ class UTorrentWebAPI:
         self.check_serious_leech = check_serious_leech
         self.check_refused_upload = check_refused_upload
         self.check_private = check_private
+        self.public_mode = public_mode
         self.log_unknown = log_unknown
         self.log_header_fmt = log_header_fmt
         self._params_list = {'list': 1, 'cid': 0, 'getmsg': 1}
@@ -678,6 +682,8 @@ class UTorrentWebAPI:
         self._token = m and m.group(1)
 
     def is_private(self, hash:str) -> bool:
+        if self.public_mode:
+            return False
         try:
             return self._torrents_private[hash]
         except KeyError:
@@ -984,8 +990,8 @@ class UTorrentWebAPI:
                     elif seeding:
                         reasons.append('Seeding')
                         reasons.append('XunLei')
-                elif private:  # Skip all checks followed this
-                    continue
+                elif private:  # Skip all client name checks followed this
+                    pass
                 elif sum(1 if ord(c) < 128 else -1 for c in peer.client) < 0:
                     anonymous = True
                     peer.client = repr(peer.client)  # For better print
@@ -1034,7 +1040,7 @@ class UTorrentWebAPI:
                     reasons.append('TaskOK')
                     reasons.append(suspicious)
                 ### End check client name
-                if self.check_serious_leech or anonymous:
+                if self.check_serious_leech and not private or anonymous:
                     try:
                         luploaded, suploaded, _suploaded, t = \
                                 self._statistics_uploaded[hash][ip_port]
@@ -1074,7 +1080,7 @@ class UTorrentWebAPI:
                         t = None
                     self._statistics_uploaded[hash][ip_port] = \
                             luploaded, suploaded, _suploaded, t
-                if (self.check_refused_upload or anonymous) and \
+                if (self.check_refused_upload and not private or anonymous) and \
                         not seeding and peer.downloaded == 0:
                     t = self._statistics_refused[hash].get(ip_port)
                     if reasons:
@@ -1401,6 +1407,12 @@ def main(argv=None):
                         action='store_true',
                         help=_(
                         'Enable checking (partly) for private torrents'))
+    parser.add_argument('-M', '--public-mode',
+                        action='store_true',
+                        help=_(
+                        'Be careful!!! PT user don\'t enable this. It makes all '
+                        'torrents be checked as public, equivalent of enable '
+                        'fully checking for private torrents.'))
     parser.add_argument('-U', '--log-unknown',
                         action='store_true',
                         help=_(
@@ -1508,6 +1520,8 @@ def main(argv=None):
         kwargs['check_refused_upload'] = False
     if args.private_check:
         kwargs['check_private'] = True
+    if args.public_mode:
+        kwargs['public_mode'] = True
     if args.log_unknown:
         kwargs['log_unknown'] = True
 

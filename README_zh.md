@@ -94,10 +94,10 @@ Android:
 
 ```
 ban_peers -h
-欢迎使用 Ban-Peers 1.0.4
+欢迎使用 Ban-Peers 1.0.6
 
 用法: ban_peers [-H IP|域名] [-p 端口] [-a 用户名:密码] [-e 小时] [-t 分钟]
-                [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-U] [-A] [-O]
+                [-f 格式] [-C] [-X] [-P] [-L] [-N] [-R] [-M] [-U] [-A] [-O]
                 [-s [配置文件] | -l [配置文件]] [-h] [-v]
                 [IP屏蔽配置路径]
 
@@ -134,6 +134,9 @@ ban_peers -h
                     跃对端
     -R, --private-check
                     启用对私有种子的 (部分) 检查
+    -M, --public-mode
+                    注意!!! PT 用户不要启用此参数。这将把所有种子作为公共种子，
+                    意味着把所有检查都用于私有种子。
     -U, --log-unknown
                     将未知客户端记入日志
     -A, --remove-ads
@@ -155,7 +158,7 @@ ban_peers -h
 
 ```markdown
 C:\Users\username>ban_peers
-欢迎使用 Ban-Peers 1.0.4
+欢迎使用 Ban-Peers 1.0.6
 没有输入 ipfilter，尝试从配置文件加载
 从配置文件加载 ipfilter 失败，什么都没有找到
 请输入 uTorrent 配置文件夹路径，或者 ipfilter 文件路径:
@@ -174,7 +177,7 @@ X:\uTorrent
 
 ...
 C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-config
-欢迎使用 Ban-Peers 1.0.4
+欢迎使用 Ban-Peers 1.0.6
 开始保存配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 保存参数 "ipfilter = X:\uTorrent"
 保存参数 "port = 12345"
@@ -183,7 +186,7 @@ C:\Users\username>ban_peers -p 12345 -a username:password X:\uTorrent --save-con
 
 ...
 C:\Users\username>ban_peers -p 54321
-欢迎使用 Ban-Peers 1.0.4
+欢迎使用 Ban-Peers 1.0.6
 没有输入 ipfilter，尝试从配置文件加载
 开始加载配置文件 "<你的配置目录>\BanPeers\ban_peers.conf"
 加载参数 "ipfilter = X:\uTorrent"

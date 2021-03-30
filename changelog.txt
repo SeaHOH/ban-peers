@@ -1,3 +1,11 @@
+v1.0.6
+  Enhancements:
+    Add CLI optional arguments:
+      --public-mode     make all torrents as public，for non-PT user to cope with wrong flag torrents
+  Improvements:
+    Update client identifications
+    Automate check time intervarls, range 2-10 seconds a time
+
 v1.0.5
   Bug fix:
     Compatibility of Python 3.7 has broken, issues #6. Thanks to @ArcticLampyrid

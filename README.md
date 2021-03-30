@@ -110,11 +110,11 @@ Network File:
 
 ```
 $ ban_peers -h
-Welcome using Ban-Peers 1.0.4
+Welcome using Ban-Peers 1.0.6
 
 usage: ban_peers [-H IP|DOMAIN] [-p PORT] [-a USERNAME:PASSWORD] [-e HOURS]
-                 [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-U]
-                 [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h] [-v]
+                 [-t MINUTES] [-f FORMAT] [-C] [-X] [-P] [-L] [-N] [-R] [-M]
+                 [-U] [-A] [-O] [-s [CONFIG-FILE] | -l [CONFIG-FILE]] [-h] [-v]
                  [IPFILTER-PATH]
 
 Checking & banning BitTorrent leech peers via Web API, remove Ads, working for
@@ -153,6 +153,10 @@ Optional Arguments:
                     checking is useful to connect potential active peers
     -R, --private-check
                     Enable checking (partly) for private torrents
+    -M, --public-mode
+                    Be careful!!! PT user don't enable this. It makes all
+                    torrents be checked as public, equivalent of enable fully
+                    checking for private torrents.
     -U, --log-unknown
                     Logging unknown clients
     -A, --remove-ads
@@ -175,7 +179,7 @@ Optional Arguments:
 
 ```markdown
 $ ban-peers
-Welcome using Ban-Peers 1.0.4
+Welcome using Ban-Peers 1.0.6
 No ipfilter has be inputted, try load from config file
 Load ipfilter from config file fail, found nothing
 Please input uTorrent settings folder path or ipfilter file path:
@@ -194,7 +198,7 @@ Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed
 
 ...
 $ ban_peers -p 12345 -a username:password /var/lib/utserver --save-config
-Welcome using Ban-Peers 1.0.4
+Welcome using Ban-Peers 1.0.6
 Start saving config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Save argument "ipfilter = /var/lib/utserver"
 Save argument "port = 12345"
@@ -203,7 +207,7 @@ Save argument "authorization = username:password"
 
 ...
 $ ban-peers -p 54321
-Welcome using Ban-Peers 1.0.4
+Welcome using Ban-Peers 1.0.6
 No ipfilter has be inputted, try load from config file
 Start loading config file "<YOUR CONFIG DIR>/BanPeers/ban_peers.conf"
 Load argument "ipfilter = /var/lib/utserver"

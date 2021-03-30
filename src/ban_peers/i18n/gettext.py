@@ -40,6 +40,17 @@ def path_exists(path):
         return os.path.exists(path)
 
 
+def add_fallback(self, fallback):
+    if fallback is self:
+        return
+    if self._fallback:
+        self._fallback.add_fallback(fallback)
+    else:
+        self._fallback = fallback
+
+gettext.NullTranslations.add_fallback = add_fallback  # type: ignore
+
+
 def find(domain, localedir=None, languages=None, all=False):
     # Get some reasonable defaults for arguments that were not supplied
     if localedir is None:
@@ -109,13 +120,6 @@ def translation(domain, localedir=None, languages=None,
             else:
                 with open(mofile, 'rb') as fp:
                     t = gettext._translations.setdefault(key, class_(fp))
-        # Copy the translation object to allow setting fallbacks and
-        # output charset. All other instance data is shared with the
-        # cached object.
-        # Delay copy import for speeding up gettext import when .mo files
-        # are not used.
-        import copy
-        t = copy.copy(t)
         if result is None:
             result = t
         else:

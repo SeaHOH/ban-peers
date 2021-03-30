@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2020 SeaHOH
+# Copyright (C) 2020-2021 SeaHOH
 # This file is distributed under the same license as the Ban-Peers package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Ban-Peers 1.0.2\n"
+"Project-Id-Version: Ban-Peers 1.0.6\n"
 "Report-Msgid-Bugs-To: seahoh@gmail.com\n"
-"POT-Creation-Date: 2021-01-12 12:12+0800\n"
+"POT-Creation-Date: 2021-03-29 23:59+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,339 +24,349 @@ msgid ""
 "uTorrent.\n"
 msgstr ""
 
-#: ban_peers/__init__.py:549
+#: ban_peers/__init__.py:550
+msgid "Warning: public mode is on, apply fully checking to private torrents!!!"
+msgstr ""
+
+#: ban_peers/__init__.py:553
 msgid "Please input uTorrent settings folder path or ipfilter file path:\n"
 msgstr ""
 
-#: ban_peers/__init__.py:556
+#: ban_peers/__init__.py:560
 #, python-format
 msgid "Unable to connect %(host)s:%(port)d"
 msgstr ""
 
-#: ban_peers/__init__.py:662
+#: ban_peers/__init__.py:667
 msgid "Please input WebUI username: "
 msgstr ""
 
-#: ban_peers/__init__.py:663
+#: ban_peers/__init__.py:668
 msgid "Please input WebUI password: "
 msgstr ""
 
-#: ban_peers/__init__.py:744 ban_peers/__init__.py:1289
+#: ban_peers/__init__.py:751 ban_peers/__init__.py:1298
 #, python-format
 msgid "Set uTorrent setting %(name)r to %(value)s"
 msgstr ""
 
-#: ban_peers/__init__.py:761
+#: ban_peers/__init__.py:768
 #, python-format
 msgid "[%(hash)s] set property %(name)r to %(value)s"
 msgstr ""
 
-#: ban_peers/__init__.py:797
+#: ban_peers/__init__.py:805
 #, python-format
 msgid ""
 "Banned %(ip)s:%(port)d@%(country)s: %(reason)s, downloaded: %(dlsize)s, "
 "uploaded: %(ulsize)s"
 msgstr ""
 
-#: ban_peers/__init__.py:812
+#: ban_peers/__init__.py:820
 #, python-format
 msgid "[%(hash)s][%(torrent)s] found %(message)s: [%(client)s]@%(ip&port)s"
 msgstr ""
 
-#: ban_peers/__init__.py:849
+#: ban_peers/__init__.py:857
 #, python-format
 msgid "[%(hash)s][%(torrent)s] is choked with bug, restart it "
 msgstr ""
 
-#: ban_peers/__init__.py:854
+#: ban_peers/__init__.py:862
 msgid "successed"
 msgstr ""
 
-#: ban_peers/__init__.py:856
+#: ban_peers/__init__.py:864
 msgid "failed"
 msgstr ""
 
-#: ban_peers/__init__.py:879
+#: ban_peers/__init__.py:887
 #, python-format
 msgid "[%(hash)s][%(torrent)s] increase additional check threshold"
 msgstr ""
 
-#: ban_peers/__init__.py:955
+#: ban_peers/__init__.py:963
 #, python-format
 msgid "report fack progress [%(progress).1f%%]"
 msgstr ""
 
-#: ban_peers/__init__.py:965
+#: ban_peers/__init__.py:973
 msgid "offline download server"
 msgstr ""
 
-#: ban_peers/__init__.py:971
+#: ban_peers/__init__.py:979
 msgid "XunLei"
 msgstr ""
 
-#: ban_peers/__init__.py:992
+#: ban_peers/__init__.py:1000
 msgid "player"
 msgstr ""
 
-#: ban_peers/__init__.py:1007
+#: ban_peers/__init__.py:1015
 msgid "fack client"
 msgstr ""
 
-#: ban_peers/__init__.py:1019
+#: ban_peers/__init__.py:1027
 msgid "leecher client"
 msgstr ""
 
-#: ban_peers/__init__.py:1028
+#: ban_peers/__init__.py:1036
 msgid "unknown client"
 msgstr ""
 
-#: ban_peers/__init__.py:1067
+#: ban_peers/__init__.py:1075
 msgid "highly suspected of leecher"
 msgstr ""
 
-#: ban_peers/__init__.py:1085
+#: ban_peers/__init__.py:1093
 #, python-format
 msgid "refused upload [%(availability).3f]"
 msgstr ""
 
-#: ban_peers/__init__.py:1104
+#: ban_peers/__init__.py:1112
 #, python-format
 msgid ""
 "Statis: %(ipsc)d IPs, %(torrentsuc)d/%(torrentsc)d Torrents, D: %(dlsize)s, "
 "U: %(ulsize)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1126
+#: ban_peers/__init__.py:1134
 #, python-format
 msgid "Auto-banning script %(state)s running"
 msgstr ""
 
-#: ban_peers/__init__.py:1136
+#: ban_peers/__init__.py:1144
 msgid "start"
 msgstr ""
 
-#: ban_peers/__init__.py:1148
+#: ban_peers/__init__.py:1157
 msgid "uTorrent has disconnected"
 msgstr ""
 
-#: ban_peers/__init__.py:1159
+#: ban_peers/__init__.py:1168
 #, python-format
 msgid "Unable to connect WebUI: %(url)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1164
+#: ban_peers/__init__.py:1173
 #, python-format
 msgid "Error occurred: %(error)s, %(url)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1167 ban_peers/__init__.py:1309
+#: ban_peers/__init__.py:1176 ban_peers/__init__.py:1318
 #, python-format
 msgid "%(logheader)s Error occurred: %(error)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1171
+#: ban_peers/__init__.py:1180
 msgid "uTorrent has reconnected"
 msgstr ""
 
-#: ban_peers/__init__.py:1180
+#: ban_peers/__init__.py:1189
 msgid "Choose your operation: (Q)uit, (S)top, (R)estart, (P)ause/Proceed"
 msgstr ""
 
-#: ban_peers/__init__.py:1183
+#: ban_peers/__init__.py:1192
 msgid "DISCONNECTED"
 msgstr ""
 
-#: ban_peers/__init__.py:1190 ban_peers/__init__.py:1195
+#: ban_peers/__init__.py:1199 ban_peers/__init__.py:1204
 msgid "quit"
 msgstr ""
 
-#: ban_peers/__init__.py:1197
+#: ban_peers/__init__.py:1206
 msgid "stop"
 msgstr ""
 
-#: ban_peers/__init__.py:1203
+#: ban_peers/__init__.py:1212
 msgid "restart"
 msgstr ""
 
-#: ban_peers/__init__.py:1208
+#: ban_peers/__init__.py:1217
 msgid "pause"
 msgstr ""
 
-#: ban_peers/__init__.py:1210
+#: ban_peers/__init__.py:1219
 msgid "proceed"
 msgstr ""
 
-#: ban_peers/__init__.py:1254
+#: ban_peers/__init__.py:1263
 msgid "Pairing request has been rejected!"
 msgstr ""
 
-#: ban_peers/__init__.py:1286
+#: ban_peers/__init__.py:1295
 #, python-format
 msgid "set_setting(%(name)r, %(value)s) fail: %(error)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1339
+#: ban_peers/__init__.py:1348
 msgid "IPFILTER-PATH"
 msgstr ""
 
-#: ban_peers/__init__.py:1341
+#: ban_peers/__init__.py:1350
 msgid ""
 "Path of ipfilter dir/file, will try load from config file or wait input if "
 "empty. IMPORTANT NOTICE: must be the uTorrent settings path!"
 msgstr ""
 
-#: ban_peers/__init__.py:1345
+#: ban_peers/__init__.py:1354
 msgid "IP|DOMAIN"
 msgstr ""
 
-#: ban_peers/__init__.py:1347
+#: ban_peers/__init__.py:1356
 #, python-format
 msgid "WebUI host, default %(host)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1349
+#: ban_peers/__init__.py:1358
 msgid "PORT"
 msgstr ""
 
-#: ban_peers/__init__.py:1351
+#: ban_peers/__init__.py:1360
 #, python-format
 msgid "WebUI port, default %(port)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1353
+#: ban_peers/__init__.py:1362
 msgid "USERNAME:PASSWORD"
 msgstr ""
 
-#: ban_peers/__init__.py:1355
+#: ban_peers/__init__.py:1364
 msgid "WebUI authorization, wait input if required"
 msgstr ""
 
-#: ban_peers/__init__.py:1357
+#: ban_peers/__init__.py:1366
 msgid "HOURS"
 msgstr ""
 
-#: ban_peers/__init__.py:1359
+#: ban_peers/__init__.py:1368
 #, python-format
 msgid "Ban expire time for peers, default %(time)s hours"
 msgstr ""
 
-#: ban_peers/__init__.py:1362
+#: ban_peers/__init__.py:1371
 msgid "MINUTES"
 msgstr ""
 
-#: ban_peers/__init__.py:1364
+#: ban_peers/__init__.py:1373
 #, python-format
 msgid ""
 "How much time to keep connecting before temporary banned refused upload "
 "peers, at least 5 minutes, default %(time)s minutes"
 msgstr ""
 
-#: ban_peers/__init__.py:1369
+#: ban_peers/__init__.py:1378
 msgid "FORMAT"
 msgstr ""
 
-#: ban_peers/__init__.py:1371
+#: ban_peers/__init__.py:1380
 #, python-format
 msgid "Format of log header, see time.strftime, default %(header)s"
 msgstr ""
 
-#: ban_peers/__init__.py:1377
+#: ban_peers/__init__.py:1386
 msgid "Set uTorrent to resolved peer's country code at start-up"
 msgstr ""
 
-#: ban_peers/__init__.py:1382
+#: ban_peers/__init__.py:1391
 msgid "Banned XunLei directly, no more checking"
 msgstr ""
 
-#: ban_peers/__init__.py:1386
+#: ban_peers/__init__.py:1395
 msgid "Don't checking fake progress"
 msgstr ""
 
-#: ban_peers/__init__.py:1390
+#: ban_peers/__init__.py:1399
 msgid "Don't checking serious leech, except anonymous peers"
 msgstr ""
 
-#: ban_peers/__init__.py:1394
+#: ban_peers/__init__.py:1403
 msgid ""
 "Don't checking refused upload, except anonymous peers, this checking is "
 "useful to connect potential active peers"
 msgstr ""
 
-#: ban_peers/__init__.py:1400
+#: ban_peers/__init__.py:1409
 msgid "Enable checking (partly) for private torrents"
 msgstr ""
 
-#: ban_peers/__init__.py:1404
+#: ban_peers/__init__.py:1413
+msgid ""
+"Be careful!!! PT user don't enable this. It makes all torrents be checked as "
+"public, equivalent of enable fully checking for private torrents."
+msgstr ""
+
+#: ban_peers/__init__.py:1419
 msgid "Logging unknown clients"
 msgstr ""
 
-#: ban_peers/__init__.py:1408
+#: ban_peers/__init__.py:1423
 msgid ""
 "Remove Ads via set Advanced Settings, only working for localhost, and to "
 "fail in older uTorrent"
 msgstr ""
 
-#: ban_peers/__init__.py:1413
+#: ban_peers/__init__.py:1428
 msgid "Don't turn off Web Pairing setting after remove Ads"
 msgstr ""
 
-#: ban_peers/__init__.py:1418 ban_peers/__init__.py:1428
+#: ban_peers/__init__.py:1433 ban_peers/__init__.py:1443
 msgid "CONFIG-FILE"
 msgstr ""
 
-#: ban_peers/__init__.py:1420
+#: ban_peers/__init__.py:1435
 #, python-format
 msgid ""
 "Save current arguments to a config file except \"--remove-ads\", \"--help\" "
 "and \"--version\". Save to default location \"%(config)s\" if empty input"
 msgstr ""
 
-#: ban_peers/__init__.py:1430
+#: ban_peers/__init__.py:1445
 msgid ""
 "Load arguments from a config file, will not overlaid the inputted arguments. "
 "Load from current directory (use conf/ini/cfg as extension name) or default "
 "location if empty input"
 msgstr ""
 
-#: ban_peers/__init__.py:1437
+#: ban_peers/__init__.py:1452
 msgid "Show this help message and exit"
 msgstr ""
 
-#: ban_peers/__init__.py:1441
+#: ban_peers/__init__.py:1456
 msgid "Show version and exit"
 msgstr ""
 
-#: ban_peers/__init__.py:1447
+#: ban_peers/__init__.py:1462
 msgid "Welcome using"
 msgstr ""
 
-#: ban_peers/__init__.py:1461
+#: ban_peers/__init__.py:1476
 #, python-format
 msgid "%(action)s argument \"%(name)s = %(value)s\""
 msgstr ""
 
-#: ban_peers/__init__.py:1466
+#: ban_peers/__init__.py:1481
 msgid "No ipfilter has be inputted, try load from config file"
 msgstr ""
 
-#: ban_peers/__init__.py:1477
+#: ban_peers/__init__.py:1492
 #, python-format
 msgid "Start saving config file \"%(name)s\""
 msgstr ""
 
-#: ban_peers/__init__.py:1478
+#: ban_peers/__init__.py:1493
 msgid "Save"
 msgstr ""
 
-#: ban_peers/__init__.py:1480
+#: ban_peers/__init__.py:1495
 #, python-format
 msgid "Start loading config file \"%(name)s\""
 msgstr ""
 
-#: ban_peers/__init__.py:1481
+#: ban_peers/__init__.py:1496
 msgid "Load"
 msgstr ""
 
-#: ban_peers/__init__.py:1484
+#: ban_peers/__init__.py:1499
 msgid "Load ipfilter from config file fail, found nothing"
 msgstr ""
