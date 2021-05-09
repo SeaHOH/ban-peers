@@ -1058,10 +1058,11 @@ class UTorrentWebAPI:
                         uploaded = luploaded - suploaded
                     if not reasons and uploaded and peer.progress < 1000 and (
                             relevance == 0 and peer.uploaded > kb.m500 or
-                            peer.relevance == 0 and
+                            (peer.relevance == 0 or peer.downloaded == 0) and
                             peer.uploaded > max(peer.downloaded * 10, kb.g1) or
                             peer.relevance > 0 and
                             ('d' in peer.flags or peer.waited > 60 or
+                            'D' in peer.flags and peer.downloaded == 0 or
                             0 < peer.downspeed * 100 < peer.upspeed) and
                             uploaded > min(max(size_todl_tenth, kb.m10), kb.m100) and
                             uploaded > peer.downloaded * ratio_sl < relevance):
