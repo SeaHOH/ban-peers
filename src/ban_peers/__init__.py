@@ -97,6 +97,7 @@ LEECHER_PLAYER = re.compile('''
     DLB|dlb           | # DLBT (DL)
     [Qq]vo            | # Qvod (QVOD) [Dead]
     [Ss]od            | # Soda
+    Stellar           | # Stellar Player (SP)
     [Tt]orc           | # Torch (TB)
     [Vv]ag            | # Vagaa (VG) [Dead?]
     [Xx]fp            | # Xfplay (XF)
@@ -104,6 +105,7 @@ LEECHER_PLAYER = re.compile('''
     Unknown\s(?:
         DL            | # DanDan/DLBT (DL)
         QVO           | # Qvod (QVOD) [Dead]
+        SP2           | # Stellar Player (SP)
         TB            | # Torch (TB)
         UW            | # uTorrent Web (UW)
         VG            | # Vagaa (VG) [Dead?]

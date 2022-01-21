@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 """Internationalization and localization support.
 
 This module provides extension of find/read mo files from zip archive
