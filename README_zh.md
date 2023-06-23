@@ -1,3 +1,6 @@
+## 已归档: 2023-6-23
+鉴于作者本人转到使用其它客户端已有两年，Issues 板块也没有新的问题，特此归档。
+
 # Ban-Peers ([English](https://github.com/SeaHOH/ban-peers/blob/master/README.md)/中文)
 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
 [![python version](https://img.shields.io/badge/python->=_3.7.0-blue)](https://www.python.org/downloads/)

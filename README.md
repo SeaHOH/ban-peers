@@ -1,3 +1,7 @@
+## Archived: 6/23, 2023
+In view of that I (the author) have been transferred to use of other clients for
+two years, and there was no new issue has been submitted, hereby archive.
+
 # Ban-Peers (English/[中文](https://github.com/SeaHOH/ban-peers/blob/master/README_zh.md))
 [![license](https://img.shields.io/github/license/SeaHOH/ban-peers)](https://github.com/SeaHOH/ban-peers/blob/master/LICENSE)
 [![python version](https://img.shields.io/badge/python->=_3.7.0-blue)](https://www.python.org/downloads/)
